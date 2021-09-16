@@ -19,9 +19,9 @@ typedef struct IR IR;
 int *SP;        // stack pointer (points to top of stack)
 int *BP;        // base pointer (points to beginning of activation record?)
 int *PC;        // program counter (points to NEXT instruction in text mem)
-int *DP;        // data pointer ()
-int *GP;        // global pointer ()
-int *FREE;      // heap pointer ()
+int *DP;        // data pointer (IC - 1)
+int *GP;        // global pointer (points to data section of memory - I think data is accessed at GP + IC)
+int *FREE;      // heap pointer (IC + 40)
 int IC = 0;     // instruction counter (incr by 3 for every instruction in text mem)
 
 // function to read the instructions into text part of memory
@@ -49,17 +49,15 @@ int main(int argc, char **argv) {
 
     read_instructions_into_text(ifp, pas);
 
-    // test display
-    int i;
-    for(i = 0; i < MAX_PAS_LENGTH; i++) {
-        if(i % 3 == 0 && i != 0) {
-            printf("\n");
-        }
-        printf("%d ", pas[i]);
-    }
+    // set up the pointers
+
+    PC = pas;                   // program counter pounts to beginning of text part of memory
+    GP = pas + IC;              // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
+    DP = pas + (IC - 1);        // data pointer (need to clarify about this one)
+    FREE = pas + (IC + 40);     // FREE points to heap
+    BP = pas + IC;              // base pointer points to base of data or activation records
+    SP = pas + MAX_PAS_LENGTH;  // stack pointer points to top of the stack
     
-    
-    printf("\n");
 
     fclose(ifp);
     return 0;
