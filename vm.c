@@ -44,6 +44,8 @@ void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, 
 // find base L levels down
 int base(int L);
 
+
+/** ENTRY POINT **/
 int main(int argc, char **argv) {
 
     if(argc < 2) {
