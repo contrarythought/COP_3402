@@ -2,8 +2,14 @@
 #include<stdlib.h>
 #include<string.h>
 
+// for debugging
+#define LOG(MSG) {printf("%s\n", MSG);}
+
 // size of process address space
 #define MAX_PAS_LENGTH 500
+
+// process address space
+int pas[MAX_PAS_LENGTH];
 
 // assumed max byte size of an instruction line
 #define MAX_INSTR_SIZE 8
@@ -16,12 +22,12 @@ struct IR {
 };
 typedef struct IR IR;
 
-int *SP;        // stack pointer (points to top of stack)
-int *BP;        // base pointer (points to beginning of activation record?)
-int PC = 0;     // program counter (points to NEXT instruction in text mem)
-int *DP;        // data pointer (IC - 1)
-int *GP;        // global pointer (points to data section of memory - I think data is accessed at GP + IC)
-int *FREE;      // heap pointer (IC + 40)
+int SP;         // stack pointer (points to top of stack)
+int BP;         // base pointer (points to beginning of activation record?)
+int PC;         // program counter (points to NEXT instruction in text mem)
+int DP;         // data pointer (IC - 1)
+int GP;         // global pointer (points to data section of memory - I think data is accessed at GP + IC)
+int FREE;       // heap pointer (IC + 40)
 int IC = 0;     // instruction counter (incr by 3 for every instruction in text mem) 
 
 enum ISA {
@@ -32,8 +38,11 @@ enum Operations {
      RTN, NEG, ADD, SUB, MUL, DIV, ODD, MOD, EQL, NEQ, LSS, LEQ, GTR, GEQ
 };
 
-// function to read the instructions into text part of memory
-void read_instructions_into_text(FILE *ifp, int *pas);
+// print function
+void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, int *pas, int GP);
+
+// find base L levels down
+int base(int L);
 
 int main(int argc, char **argv) {
 
@@ -41,9 +50,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
         exit(-1);
     }
-
-    // set up the Process Address Space (PAS)
-    int pas[MAX_PAS_LENGTH];
 
     // zero out process memory
     memset(pas, 0, sizeof(pas));
@@ -55,31 +61,50 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    read_instructions_into_text(ifp, pas);
+   // read instructions into text
 
+    char buffer[MAX_INSTR_SIZE];
+
+    int OP = 0, L = 0, M = 0, i = 0;
+
+    while(fgets(buffer, MAX_INSTR_SIZE, ifp)) {
+
+        sscanf(buffer, "%d %d %d", &OP, &L, &M);
+
+        pas[i]         = OP;
+        pas[i + 1]     = L;
+        pas[i + 2]     = M;
+
+        IC += 3;
+        i += 3;
+
+    }
+
+    fclose(ifp);
+    
     // set up the pointers
 
-    GP = pas + IC;                      // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
-    DP = pas + (IC - 1);                // data pointer (need to clarify about this one)
-    FREE = pas + (IC + 40);             // FREE points to heap
-    BP = pas + IC;                      // base pointer points to base of data or activation records
-    SP = pas + (MAX_PAS_LENGTH - 1);    // stack pointer points to top of the stack
+    PC = 0;                         // program counter points to beginning of text
+    GP = IC;                        // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
+    DP = IC - 1;                    // data pointer (need to clarify about this one)
+    FREE = IC + 40;                 // FREE points to heap
+    BP = IC;                        // base pointer points to base of data or activation records
+    SP = MAX_PAS_LENGTH;            // stack pointer points to top of the stack
 
-    int halt = 0;                       // halt flag
-    IR instr;                           // instruction register
+    int halt = 0;                   // halt flag
+    IR instr;                       // instruction register
 
 
     while(!halt) {
 
         // read instruction into IR
         instr.OP = pas[PC];
-        PC++;
 
-        instr.L = pas[PC];
-        PC++;
+        instr.L = pas[PC + 1];
 
-        instr.M = pas[PC];
-        PC++;
+        instr.M = pas[PC + 2];
+
+        PC += 3;
 
         switch(instr.OP) {
 
@@ -110,43 +135,43 @@ int main(int argc, char **argv) {
             case SYS: {
                 break;
             }
-        }
-        
+        }    
     }
     
-
-    fclose(ifp);
     return 0;
 }
 
-void read_instructions_into_text(FILE *ifp, int *pas) {
+void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, int *pas, int GP) {
 
-    // buffer that stores a line of instruction
-    char buffer[MAX_INSTR_SIZE];
+    int i;
 
-    int OP = 0, L = 0, M = 0, i = 0;
+    printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, instr->L, instr->M, PC, BP, SP, DP);
 
+    for(i = GP; i <= DP; i++) {
 
-    while(fgets(buffer, MAX_INSTR_SIZE, ifp)) {
+        // print data section
+        printf("%d ", pas[i]);
+        printf("\n");
 
-        sscanf(buffer, "%d %d %d", &OP, &L, &M);
-
-        // pas + 0 = OP
-        *(pas + i) = OP;
-        i++;
-
-        // pas + 1 = L
-        *(pas + i) = L;
-        i++;
-
-        // pas + 2 = M
-        *(pas + i) = M;
-
-        // increment instruction counter by 3
-        IC += 3;
-
-        // increment i for the next round of instructions
-        i++;
+        // print stack
+        printf("\tstack :");
+        for(i = MAX_PAS_LENGTH - 1; i >= SP; i--) 
+            printf("%d ", pas[i]);
+        printf("\n");
 
     }
+}
+
+int base(int L) {
+
+    int arb = BP;   // arb = activation record base
+
+    while(L > 0) {  // find base L levels down
+
+        arb = pas[arb];
+        L--;
+
+    }
+
+    return arb;
 }
