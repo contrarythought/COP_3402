@@ -18,11 +18,19 @@ typedef struct IR IR;
 
 int *SP;        // stack pointer (points to top of stack)
 int *BP;        // base pointer (points to beginning of activation record?)
-int *PC;        // program counter (points to NEXT instruction in text mem)
+int PC = 0;     // program counter (points to NEXT instruction in text mem)
 int *DP;        // data pointer (IC - 1)
 int *GP;        // global pointer (points to data section of memory - I think data is accessed at GP + IC)
 int *FREE;      // heap pointer (IC + 40)
-int IC = 0;     // instruction counter (incr by 3 for every instruction in text mem)
+int IC = 0;     // instruction counter (incr by 3 for every instruction in text mem) 
+
+enum ISA {
+    LIT = 1, OPR, LOD, STO, CAL, INC, JMP, JPC, SYS
+};
+
+enum Operations {
+     RTN, NEG, ADD, SUB, MUL, DIV, ODD, MOD, EQL, NEQ, LSS, LEQ, GTR, GEQ
+};
 
 // function to read the instructions into text part of memory
 void read_instructions_into_text(FILE *ifp, int *pas);
@@ -51,12 +59,60 @@ int main(int argc, char **argv) {
 
     // set up the pointers
 
-    PC = pas;                   // program counter pounts to beginning of text part of memory
-    GP = pas + IC;              // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
-    DP = pas + (IC - 1);        // data pointer (need to clarify about this one)
-    FREE = pas + (IC + 40);     // FREE points to heap
-    BP = pas + IC;              // base pointer points to base of data or activation records
-    SP = pas + MAX_PAS_LENGTH;  // stack pointer points to top of the stack
+    GP = pas + IC;                      // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
+    DP = pas + (IC - 1);                // data pointer (need to clarify about this one)
+    FREE = pas + (IC + 40);             // FREE points to heap
+    BP = pas + IC;                      // base pointer points to base of data or activation records
+    SP = pas + (MAX_PAS_LENGTH - 1);    // stack pointer points to top of the stack
+
+    int halt = 0;                       // halt flag
+    IR instr;                           // instruction register
+
+
+    while(!halt) {
+
+        // read instruction into IR
+        instr.OP = pas[PC];
+        PC++;
+
+        instr.L = pas[PC];
+        PC++;
+
+        instr.M = pas[PC];
+        PC++;
+
+        switch(instr.OP) {
+
+            case LIT: {
+                break;
+            }
+            case OPR: {
+                break;
+            }
+            case LOD: {
+                break;
+            }
+            case STO: {
+                break;
+            }
+            case CAL: {
+                break;
+            }
+            case INC: {
+                break;
+            }
+            case JMP: {
+                break;
+            }
+            case JPC: {
+                break;
+            }
+            case SYS: {
+                break;
+            }
+        }
+        
+    }
     
 
     fclose(ifp);
