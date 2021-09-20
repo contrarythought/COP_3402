@@ -134,6 +134,143 @@ int main(int argc, char **argv) {
                 break;
             }
             case OPR: {
+                switch (instr.M) {
+                    case RTN : {
+                        SP = BP + 1;
+                        BP = pas[SP - 2];
+                        PC = pas[SP - 3];
+                        break;
+                    }
+                    case NEG : {
+                        if (BP == GP) {pas[DP] *= -1;}
+                        else {pas[SP] *= -1;}
+                        break;
+                    }
+                    case ADD : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] += pas[DP + 1];
+                        } else {
+                            SP++;
+                            pas[SP] += pas[SP - 1];
+                        }
+                        break;
+                    }
+                    case SUB : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] -= pas[DP + 1];
+                        } else {
+                            SP++;
+                            pas[SP] -= pas[SP - 1];
+                        }
+                        break;
+                    }
+                    case MUL : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] *= pas[DP + 1];
+                        } else {
+                            SP++;
+                            pas[SP] *= pas[SP - 1];
+                        }
+                        break;
+                    }
+                    case DIV : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] /= pas[DP + 1];
+                        } else {
+                            SP++;
+                            pas[SP] /= pas[SP - 1];
+                        }
+                        break;
+                    }
+                    case ODD : {
+                        if (BP == GP) {pas[DP] %= 2;}
+                        else {pas[SP] %= 2;}
+                        break;
+                    }
+                    case MOD : {
+                            if (BP == GP) {
+                                DP--;
+                                pas[DP] %= pas[DP + 1];
+                            } else {
+                                SP++;
+                                pas[SP] %= pas[SP - 1];
+                            }
+                            break;
+                    }
+                    case EQL : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] = (pas[DP] == pas[DP + 1]) ? 0 : 1;
+
+                        } else {
+                            SP++;
+                            pas[SP] = (pas[SP] == pas[SP - 1]) ? 0 : 1;
+                        }
+                        break;
+                    }
+                    case NEQ : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] = (pas[DP] != pas[DP + 1]) ? 0 : 1;
+
+                        } else {
+                            SP++;
+                            pas[SP] = (pas[SP] != pas[SP - 1]) ? 0 : 1;
+                        }
+                        break;
+                    }
+                    case LSS : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] = (pas[DP] < pas[DP + 1]) ? 0 : 1;
+
+                        } else {
+                            SP++;
+                            pas[SP] = (pas[SP] < pas[SP - 1]) ? 0 : 1;
+                        }
+                        break;
+                    }
+                    case LEQ : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] = (pas[DP] <= pas[DP + 1]) ? 0 : 1;
+
+                        } else {
+                            SP++;
+                            pas[SP] = (pas[SP] <= pas[SP - 1]) ? 0 : 1;
+                        }
+                        break;
+                    }
+                    case GTR : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] = (pas[DP] > pas[DP + 1]) ? 0 : 1;
+
+                        } else {
+                            SP++;
+                            pas[SP] = (pas[SP] > pas[SP - 1]) ? 0 : 1;
+                        }
+                        break;
+                    }
+                    case GEQ : {
+                        if (BP == GP) {
+                            DP--;
+                            pas[DP] = (pas[DP] >= pas[DP + 1]) ? 0 : 1;
+
+                        } else {
+                            SP++;
+                            pas[SP] = (pas[SP] >= pas[SP - 1]) ? 0 : 1;
+                        }
+                        break;
+                    }
+                    default :
+                    printf("Invalid Instruction: %d %d %d", instr.OP, instr.L, instr.M);
+                    break;
+                }
                 break;
             }
             case LOD: {
@@ -175,16 +312,39 @@ int main(int argc, char **argv) {
                 
                 PC = instr.M;
                 strcpy(opname, "JMP");
-
-                /** DELETE THIS **/
-                halt = 1;
-
                 break;
             }
             case JPC: {
                 break;
             }
             case SYS: {
+                if (instr.L != 0) {
+                    printf("Invalid Call, L needs to be 0.");
+                    continue;
+                }
+                switch(instr.M) {
+                    case 1 :
+                        if (BP == GP) {
+                            printf("%d", pas[DP]);
+                            DP--;
+                        } else {
+                            printf("%d", pas[SP]);
+                            SP++;
+                        }
+                        break;
+                    case 2 :
+                        if (BP == GP) {
+                            DP++;
+                            scanf("%d", &pas[DP]);
+                        } else {
+                            SP--;
+                            scanf("%d", &pas[SP]);
+                        }
+                        break;
+                    case 3 :
+                        printf("End of Program");
+                        halt = 1;
+                }
                 break;
             }
         }  
