@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
     IR instr;                       // instruction register
 
 
-    /** NEED TO PRINT OUT HEADER **/
+    /** TODO - NEED TO PRINT OUT HEADER **/
 
     while(!halt) {
 
@@ -299,13 +299,15 @@ int main(int argc, char **argv) {
                 break;
             }
             case STO: {
+                // TODO
                 break;
             }
             case CAL: {
+                // TODO
                 break;
             }
             case INC: {
-
+                // TODO
                 break;
             }
             case JMP: {
@@ -315,6 +317,7 @@ int main(int argc, char **argv) {
                 break;
             }
             case JPC: {
+                // TODO
                 break;
             }
             case SYS: {
@@ -342,7 +345,7 @@ int main(int argc, char **argv) {
                         }
                         break;
                     case 3 :
-                        printf("End of Program");
+                        printf("End of Program\n");
                         halt = 1;
                 }
                 break;
@@ -351,8 +354,6 @@ int main(int argc, char **argv) {
 
         print_execution(line, opname, &instr, PC, SP, DP, pas, GP);  
     }
-
-    printf("\n");
     
     return 0;
 }
@@ -376,6 +377,8 @@ void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, 
         printf("\n");
 
     }
+
+    printf("\n");
 }
 
 int base(int L) {
