@@ -299,15 +299,45 @@ int main(int argc, char **argv) {
                 break;
             }
             case STO: {
-                // TODO
+                
+                if(BP == GP) {
+
+                    pas[GP + instr.M] = pas[SP];
+                    SP++;
+
+                } else {
+
+                    if(base(instr.L) == GP) {
+
+                        pas[GP + instr.M] = pas[SP];
+                        SP++;
+
+                    } else {
+
+                        pas[base(instr.L) - M] = pas[SP];
+                        SP++;
+
+                    }
+
+                }
+
                 break;
             }
             case CAL: {
-                // TODO
+                
+                pas[SP - 1] = base(instr.L); // static link
+                pas[SP - 2] = BP; // dynamic link
+                pas[SP - 3] = PC; // return address
+                BP = SP - 1;
+                PC = instr.M;
+
                 break;
             }
             case INC: {
-                // TODO
+                
+                if(BP == GP) DP += instr.M;
+                else SP -= instr.M;
+                
                 break;
             }
             case JMP: {
@@ -317,7 +347,19 @@ int main(int argc, char **argv) {
                 break;
             }
             case JPC: {
-                // TODO
+                
+                if(BP == GP) {
+
+                    if(pas[DP] == 0) PC = instr.M;
+                    DP--;
+
+                } else {
+
+                    if(pas[SP] == 0) PC = instr.M;
+                    SP++;
+
+                }
+                
                 break;
             }
             case SYS: {
