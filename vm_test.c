@@ -1,9 +1,12 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // for debugging
-#define LOG(MSG) {printf("%s\n", MSG);}
+#define LOG(MSG)             \
+    {                        \
+        printf("%s\n", MSG); \
+    }
 
 // size of process address space
 #define MAX_PAS_LENGTH 500
@@ -15,27 +18,51 @@ int pas[MAX_PAS_LENGTH];
 #define MAX_INSTR_SIZE 8
 
 // instruction register
-struct IR {
-    int OP;  
-    int L;   
-    int M;      
+struct IR
+{
+    int OP;
+    int L;
+    int M;
 };
 typedef struct IR IR;
 
-int SP;         // stack pointer (points to top of stack)
-int BP;         // base pointer (points to beginning of activation record?)
-int PC;         // program counter (points to NEXT instruction in text mem)
-int DP;         // data pointer (IC - 1)
-int GP;         // global pointer (points to data section of memory - I think data is accessed at GP + IC)
-int FREE;       // heap pointer (IC + 40)
-int IC = 0;     // instruction counter (incr by 3 for every instruction in text mem) 
+int SP;     // stack pointer (points to top of stack)
+int BP;     // base pointer (points to beginning of activation record?)
+int PC;     // program counter (points to NEXT instruction in text mem)
+int DP;     // data pointer (IC - 1)
+int GP;     // global pointer (points to data section of memory - I think data is accessed at GP + IC)
+int FREE;   // heap pointer (IC + 40)
+int IC = 0; // instruction counter (incr by 3 for every instruction in text mem)
 
-enum ISA {
-    LIT = 1, OPR, LOD, STO, CAL, INC, JMP, JPC, SYS
+enum ISA
+{
+    LIT = 1,
+    OPR,
+    LOD,
+    STO,
+    CAL,
+    INC,
+    JMP,
+    JPC,
+    SYS
 };
 
-enum Operations {
-     RTN, NEG, ADD, SUB, MUL, DIV, ODD, MOD, EQL, NEQ, LSS, LEQ, GTR, GEQ
+enum Operations
+{
+    RTN,
+    NEG,
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    ODD,
+    MOD,
+    EQL,
+    NEQ,
+    LSS,
+    LEQ,
+    GTR,
+    GEQ
 };
 
 // print function
@@ -44,12 +71,12 @@ void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, 
 // find base L levels down
 int base(int L);
 
-
-
 /** ENTRY POINT **/
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
-    if(argc < 2) {
+    if (argc < 2)
+    {
         fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
         exit(-1);
     }
@@ -59,48 +86,49 @@ int main(int argc, char **argv) {
 
     // read instruction file (assuming 1 file )
     FILE *ifp = fopen(argv[1], "r");
-    if(!ifp) {
+    if (!ifp)
+    {
         fprintf(stderr, "Cannot open file %s\n", argv[1]);
         exit(-1);
     }
 
-   // read instructions into text
+    // read instructions into text
 
     char buffer[MAX_INSTR_SIZE];
 
     int OP = 0, L = 0, M = 0, i = 0;
 
-    while(fgets(buffer, MAX_INSTR_SIZE, ifp)) {
+    while (fgets(buffer, MAX_INSTR_SIZE, ifp))
+    {
 
         sscanf(buffer, "%d %d %d", &OP, &L, &M);
 
-        pas[i]         = OP;
-        pas[i + 1]     = L;
-        pas[i + 2]     = M;
+        pas[i] = OP;
+        pas[i + 1] = L;
+        pas[i + 2] = M;
 
         IC += 3;
         i += 3;
-
     }
 
     fclose(ifp);
 
     // set up the pointers
 
-    PC = 0;                         // program counter points to beginning of text
-    GP = IC;                        // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
-    DP = IC - 1;                    // data pointer (need to clarify about this one)
-    FREE = IC + 40;                 // FREE points to heap
-    BP = IC;                        // base pointer points to base of data or activation records
-    SP = MAX_PAS_LENGTH;            // stack pointer points to top of the stack
+    PC = 0;              // program counter points to beginning of text
+    GP = IC;             // global pointer points to data part of memory (doc says GP = IC, so I assume pas + IC)
+    DP = IC - 1;         // data pointer (need to clarify about this one)
+    FREE = IC + 40;      // FREE points to heap
+    BP = IC;             // base pointer points to base of data or activation records
+    SP = MAX_PAS_LENGTH; // stack pointer points to top of the stack
 
-    int halt = 0;                   // halt flag
-    IR instr;                       // instruction register
-
+    int halt = 0; // halt flag
+    IR instr;     // instruction register
 
     /** TODO - NEED TO PRINT OUT HEADER **/
 
-    while(!halt) {
+    while (!halt)
+    {
 
         // read instruction into IR
         instr.OP = pas[PC];
@@ -115,298 +143,382 @@ int main(int argc, char **argv) {
 
         char opname[4];
 
-        switch(instr.OP) {
+        switch (instr.OP)
+        {
 
-            case LIT: {
+        case LIT:
+        {
 
-                if(BP == GP) {
+            if (BP == GP)
+            {
 
-                    DP++;
-                    pas[DP] = instr.M;
+                DP++;
+                pas[DP] = instr.M;
+            }
+            else
+            {
 
-                } else {
+                SP--;
+                pas[SP] = instr.M;
+            }
+
+            break;
+        }
+        case OPR:
+        {
+            switch (instr.M)
+            {
+            case RTN:
+            {
+                SP = BP + 1;
+                BP = pas[SP - 2];
+                PC = pas[SP - 3];
+                break;
+            }
+            case NEG:
+            {
+                if (BP == GP)
+                {
+                    pas[DP] *= -1;
+                }
+                else
+                {
+                    pas[SP] *= -1;
+                }
+                break;
+            }
+            case ADD:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] += pas[DP + 1];
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] += pas[SP - 1];
+                }
+                break;
+            }
+            case SUB:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] -= pas[DP + 1];
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] -= pas[SP - 1];
+                }
+                break;
+            }
+            case MUL:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] *= pas[DP + 1];
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] *= pas[SP - 1];
+                }
+                break;
+            }
+            case DIV:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] /= pas[DP + 1];
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] /= pas[SP - 1];
+                }
+                break;
+            }
+            case ODD:
+            {
+                if (BP == GP)
+                {
+                    pas[DP] %= 2;
+                }
+                else
+                {
+                    pas[SP] %= 2;
+                }
+                break;
+            }
+            case MOD:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] %= pas[DP + 1];
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] %= pas[SP - 1];
+                }
+                break;
+            }
+            case EQL:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] = (pas[DP] == pas[DP + 1]) ? 0 : 1;
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] = (pas[SP] == pas[SP - 1]) ? 0 : 1;
+                }
+                break;
+            }
+            case NEQ:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] = (pas[DP] != pas[DP + 1]) ? 0 : 1;
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] = (pas[SP] != pas[SP - 1]) ? 0 : 1;
+                }
+                break;
+            }
+            case LSS:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] = (pas[DP] < pas[DP + 1]) ? 0 : 1;
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] = (pas[SP] < pas[SP - 1]) ? 0 : 1;
+                }
+                break;
+            }
+            case LEQ:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] = (pas[DP] <= pas[DP + 1]) ? 0 : 1;
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] = (pas[SP] <= pas[SP - 1]) ? 0 : 1;
+                }
+                break;
+            }
+            case GTR:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] = (pas[DP] > pas[DP + 1]) ? 0 : 1;
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] = (pas[SP] > pas[SP - 1]) ? 0 : 1;
+                }
+                break;
+            }
+            case GEQ:
+            {
+                if (BP == GP)
+                {
+                    DP--;
+                    pas[DP] = (pas[DP] >= pas[DP + 1]) ? 0 : 1;
+                }
+                else
+                {
+                    SP++;
+                    pas[SP] = (pas[SP] >= pas[SP - 1]) ? 0 : 1;
+                }
+                break;
+            }
+            default:
+                printf("Invalid Instruction: %d %d %d", instr.OP, instr.L, instr.M);
+                break;
+            }
+            break;
+        }
+        case LOD:
+        {
+
+            if (BP == GP)
+            {
+
+                DP++;
+                pas[DP] = pas[GP + M];
+            }
+            else
+            {
+
+                if (base(instr.L))
+                {
 
                     SP--;
-                    pas[SP] = instr.M;
-
+                    pas[SP] = pas[GP + instr.M];
                 }
+                else
+                {
 
-                break;
-            }
-            case OPR: {
-                switch (instr.M) {
-                    case RTN : {
-                        SP = BP + 1;
-                        BP = pas[SP - 2];
-                        PC = pas[SP - 3];
-                        break;
-                    }
-                    case NEG : {
-                        if (BP == GP) {pas[DP] *= -1;}
-                        else {pas[SP] *= -1;}
-                        break;
-                    }
-                    case ADD : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] += pas[DP + 1];
-                        } else {
-                            SP++;
-                            pas[SP] += pas[SP - 1];
-                        }
-                        break;
-                    }
-                    case SUB : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] -= pas[DP + 1];
-                        } else {
-                            SP++;
-                            pas[SP] -= pas[SP - 1];
-                        }
-                        break;
-                    }
-                    case MUL : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] *= pas[DP + 1];
-                        } else {
-                            SP++;
-                            pas[SP] *= pas[SP - 1];
-                        }
-                        break;
-                    }
-                    case DIV : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] /= pas[DP + 1];
-                        } else {
-                            SP++;
-                            pas[SP] /= pas[SP - 1];
-                        }
-                        break;
-                    }
-                    case ODD : {
-                        if (BP == GP) {pas[DP] %= 2;}
-                        else {pas[SP] %= 2;}
-                        break;
-                    }
-                    case MOD : {
-                            if (BP == GP) {
-                                DP--;
-                                pas[DP] %= pas[DP + 1];
-                            } else {
-                                SP++;
-                                pas[SP] %= pas[SP - 1];
-                            }
-                            break;
-                    }
-                    case EQL : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] = (pas[DP] == pas[DP + 1]) ? 0 : 1;
-
-                        } else {
-                            SP++;
-                            pas[SP] = (pas[SP] == pas[SP - 1]) ? 0 : 1;
-                        }
-                        break;
-                    }
-                    case NEQ : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] = (pas[DP] != pas[DP + 1]) ? 0 : 1;
-
-                        } else {
-                            SP++;
-                            pas[SP] = (pas[SP] != pas[SP - 1]) ? 0 : 1;
-                        }
-                        break;
-                    }
-                    case LSS : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] = (pas[DP] < pas[DP + 1]) ? 0 : 1;
-
-                        } else {
-                            SP++;
-                            pas[SP] = (pas[SP] < pas[SP - 1]) ? 0 : 1;
-                        }
-                        break;
-                    }
-                    case LEQ : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] = (pas[DP] <= pas[DP + 1]) ? 0 : 1;
-
-                        } else {
-                            SP++;
-                            pas[SP] = (pas[SP] <= pas[SP - 1]) ? 0 : 1;
-                        }
-                        break;
-                    }
-                    case GTR : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] = (pas[DP] > pas[DP + 1]) ? 0 : 1;
-
-                        } else {
-                            SP++;
-                            pas[SP] = (pas[SP] > pas[SP - 1]) ? 0 : 1;
-                        }
-                        break;
-                    }
-                    case GEQ : {
-                        if (BP == GP) {
-                            DP--;
-                            pas[DP] = (pas[DP] >= pas[DP + 1]) ? 0 : 1;
-
-                        } else {
-                            SP++;
-                            pas[SP] = (pas[SP] >= pas[SP - 1]) ? 0 : 1;
-                        }
-                        break;
-                    }
-                    default :
-                    printf("Invalid Instruction: %d %d %d", instr.OP, instr.L, instr.M);
-                    break;
+                    SP--;
+                    pas[SP] = pas[base(instr.L) - M];
                 }
-                break;
             }
-            case LOD: {
 
-                if(BP == GP) {
+            break;
+        }
+        case STO:
+        {
 
-                    DP++;
-                    pas[DP] = pas[GP + M];
+            if (BP == GP)
+            {
 
-                } else {
-
-                    if(base(instr.L)) {
-
-                        SP--;
-                        pas[SP] = pas[GP + instr.M];
-
-                    } else {
-
-                        SP--;
-                        pas[SP] = pas[base(instr.L) - M];
-
-                    }
-
-                }
-
-                break;
+                pas[GP + instr.M] = pas[SP];
+                SP++;
             }
-            case STO: {
-                
-                if(BP == GP) {
+            else
+            {
+
+                if (base(instr.L) == GP)
+                {
 
                     pas[GP + instr.M] = pas[SP];
                     SP++;
-
-                } else {
-
-                    if(base(instr.L) == GP) {
-
-                        pas[GP + instr.M] = pas[SP];
-                        SP++;
-
-                    } else {
-
-                        pas[base(instr.L) - M] = pas[SP];
-                        SP++;
-
-                    }
-
                 }
+                else
+                {
 
-                break;
-            }
-            case CAL: {
-                
-                pas[SP - 1] = base(instr.L); // static link
-                pas[SP - 2] = BP; // dynamic link
-                pas[SP - 3] = PC; // return address
-                BP = SP - 1;
-                PC = instr.M;
-
-                break;
-            }
-            case INC: {
-                
-                if(BP == GP) DP += instr.M;
-                else SP -= instr.M;
-                
-                break;
-            }
-            case JMP: {
-                
-                PC = instr.M;
-                strcpy(opname, "JMP");
-                break;
-            }
-            case JPC: {
-                
-                if(BP == GP) {
-
-                    if(pas[DP] == 0) PC = instr.M;
-                    DP--;
-
-                } else {
-
-                    if(pas[SP] == 0) PC = instr.M;
+                    pas[base(instr.L) - M] = pas[SP];
                     SP++;
-
                 }
-                
-                break;
             }
-            case SYS: {
-                if (instr.L != 0) {
-                    printf("Invalid Call, L needs to be 0.");
-                    continue;
+
+            break;
+        }
+        case CAL:
+        {
+
+            pas[SP - 1] = base(instr.L); // static link
+            pas[SP - 2] = BP;            // dynamic link
+            pas[SP - 3] = PC;            // return address
+            BP = SP - 1;
+            PC = instr.M;
+
+            break;
+        }
+        case INC:
+        {
+
+            if (BP == GP)
+                DP += instr.M;
+            else
+                SP -= instr.M;
+
+            break;
+        }
+        case JMP:
+        {
+
+            PC = instr.M;
+            strcpy(opname, "JMP");
+            break;
+        }
+        case JPC:
+        {
+
+            if (BP == GP)
+            {
+
+                if (pas[DP] == 0)
+                    PC = instr.M;
+                DP--;
+            }
+            else
+            {
+
+                if (pas[SP] == 0)
+                    PC = instr.M;
+                SP++;
+            }
+
+            break;
+        }
+        case SYS:
+        {
+            if (instr.L != 0)
+            {
+                printf("Invalid Call, L needs to be 0.");
+                continue;
+            }
+            switch (instr.M)
+            {
+            case 1:
+                if (BP == GP)
+                {
+                    printf("%d", pas[DP]);
+                    DP--;
                 }
-                switch(instr.M) {
-                    case 1 :
-                        if (BP == GP) {
-                            printf("%d", pas[DP]);
-                            DP--;
-                        } else {
-                            printf("%d", pas[SP]);
-                            SP++;
-                        }
-                        break;
-                    case 2 :
-                        if (BP == GP) {
-                            DP++;
-                            scanf("%d", &pas[DP]);
-                        } else {
-                            SP--;
-                            scanf("%d", &pas[SP]);
-                        }
-                        break;
-                    case 3 :
-                        printf("End of Program\n");
-                        halt = 1;
+                else
+                {
+                    printf("%d", pas[SP]);
+                    SP++;
                 }
                 break;
+            case 2:
+                if (BP == GP)
+                {
+                    DP++;
+                    scanf("%d", &pas[DP]);
+                }
+                else
+                {
+                    SP--;
+                    scanf("%d", &pas[SP]);
+                }
+                break;
+            case 3:
+                printf("End of Program\n");
+                halt = 1;
             }
-        }  
+            break;
+        }
+        }
 
-        print_execution(line, opname, &instr, PC, SP, DP, pas, GP);  
+        print_execution(line, opname, &instr, PC, SP, DP, pas, GP);
     }
-    
+
     return 0;
 }
 
-void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, int *pas, int GP) {
+void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, int *pas, int GP)
+{
 
     int i;
 
     printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, instr->L, instr->M, PC, BP, SP, DP);
 
-    for(i = GP; i <= DP; i++) {
+    for (i = GP; i <= DP; i++)
+    {
 
         // print data section
         printf("%d ", pas[i]);
@@ -414,24 +526,24 @@ void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, 
 
         // print stack
         printf("\tstack :");
-        for(i = MAX_PAS_LENGTH - 1; i >= SP; i--) 
+        for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
             printf("%d ", pas[i]);
         printf("\n");
-
     }
 
     printf("\n");
 }
 
-int base(int L) {
+int base(int L)
+{
 
-    int arb = BP;   // arb = activation record base
+    int arb = BP; // arb = activation record base
 
-    while(L > 0) {  // find base L levels down
+    while (L > 0)
+    { // find base L levels down
 
         arb = pas[arb];
         L--;
-
     }
 
     return arb;
