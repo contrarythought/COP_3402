@@ -148,6 +148,7 @@ int main(int argc, char **argv)
 
         case LIT:
         {
+            strcpy(opname, "LIT");
 
             if (BP == GP)
             {
@@ -170,6 +171,7 @@ int main(int argc, char **argv)
             {
             case RTN:
             {
+                strcpy(opname, "RTN");
                 SP = BP + 1;
                 BP = pas[SP - 2];
                 PC = pas[SP - 3];
@@ -177,6 +179,7 @@ int main(int argc, char **argv)
             }
             case NEG:
             {
+                strcpy(opname, "NEG");
                 if (BP == GP)
                 {
                     pas[DP] *= -1;
@@ -189,6 +192,7 @@ int main(int argc, char **argv)
             }
             case ADD:
             {
+                strcpy(opname, "ADD");
                 if (BP == GP)
                 {
                     DP--;
@@ -203,6 +207,7 @@ int main(int argc, char **argv)
             }
             case SUB:
             {
+                strcpy(opname, "SUB");
                 if (BP == GP)
                 {
                     DP--;
@@ -217,6 +222,7 @@ int main(int argc, char **argv)
             }
             case MUL:
             {
+                strcpy(opname, "MUL");
                 if (BP == GP)
                 {
                     DP--;
@@ -231,6 +237,7 @@ int main(int argc, char **argv)
             }
             case DIV:
             {
+                strcpy(opname, "DIV");
                 if (BP == GP)
                 {
                     DP--;
@@ -245,6 +252,7 @@ int main(int argc, char **argv)
             }
             case ODD:
             {
+                strcpy(opname, "ODD");
                 if (BP == GP)
                 {
                     pas[DP] %= 2;
@@ -257,6 +265,7 @@ int main(int argc, char **argv)
             }
             case MOD:
             {
+                strcpy(opname, "MOD");
                 if (BP == GP)
                 {
                     DP--;
@@ -271,6 +280,7 @@ int main(int argc, char **argv)
             }
             case EQL:
             {
+                strcpy(opname, "EQL");
                 if (BP == GP)
                 {
                     DP--;
@@ -285,6 +295,7 @@ int main(int argc, char **argv)
             }
             case NEQ:
             {
+                strcpy(opname, "NEQ");
                 if (BP == GP)
                 {
                     DP--;
@@ -299,6 +310,7 @@ int main(int argc, char **argv)
             }
             case LSS:
             {
+                strcpy(opname, "LSS");
                 if (BP == GP)
                 {
                     DP--;
@@ -313,6 +325,7 @@ int main(int argc, char **argv)
             }
             case LEQ:
             {
+                strcpy(opname, "LEQ");
                 if (BP == GP)
                 {
                     DP--;
@@ -327,6 +340,7 @@ int main(int argc, char **argv)
             }
             case GTR:
             {
+                strcpy(opname, "GTR");
                 if (BP == GP)
                 {
                     DP--;
@@ -341,6 +355,7 @@ int main(int argc, char **argv)
             }
             case GEQ:
             {
+                strcpy(opname, "GEQ");
                 if (BP == GP)
                 {
                     DP--;
@@ -361,7 +376,7 @@ int main(int argc, char **argv)
         }
         case LOD:
         {
-
+            strcpy(opname, "LOD");
             if (BP == GP)
             {
 
@@ -389,7 +404,7 @@ int main(int argc, char **argv)
         }
         case STO:
         {
-
+            strcpy(opname, "STO");
             if (BP == GP)
             {
 
@@ -417,7 +432,7 @@ int main(int argc, char **argv)
         }
         case CAL:
         {
-
+            strcpy(opname, "CAL");
             pas[SP - 1] = base(instr.L); // static link
             pas[SP - 2] = BP;            // dynamic link
             pas[SP - 3] = PC;            // return address
@@ -428,7 +443,7 @@ int main(int argc, char **argv)
         }
         case INC:
         {
-
+            strcpy(opname, "INC");
             if (BP == GP)
                 DP += instr.M;
             else
@@ -445,7 +460,7 @@ int main(int argc, char **argv)
         }
         case JPC:
         {
-
+            strcpy(opname, "JPC");
             if (BP == GP)
             {
 
@@ -465,6 +480,7 @@ int main(int argc, char **argv)
         }
         case SYS:
         {
+            strcpy(opname, "SYS");
             if (instr.L != 0)
             {
                 printf("Invalid Call, L needs to be 0.");
@@ -473,6 +489,7 @@ int main(int argc, char **argv)
             switch (instr.M)
             {
             case 1:
+                printf("Top of Stack Value: ");
                 if (BP == GP)
                 {
                     printf("%d", pas[DP]);
@@ -483,8 +500,10 @@ int main(int argc, char **argv)
                     printf("%d", pas[SP]);
                     SP++;
                 }
+                printf("\n");
                 break;
             case 2:
+                printf("Please Enter an Integer: ");
                 if (BP == GP)
                 {
                     DP++;
