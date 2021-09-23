@@ -538,16 +538,15 @@ void print_execution(int line, char *opname, IR *instr, int PC, int SP, int DP, 
 
     for (i = GP; i <= DP; i++)
     {
-
-        // print data section
         printf("%d ", pas[i]);
-        printf("\n");
+    }
+    printf("\n");
 
-        // print stack
-        printf("\tstack :");
-        for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
-            printf("%d ", pas[i]);
-        printf("\n");
+    // print stack
+    printf("\tstack : ");
+    for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
+    {
+        printf("%d ", pas[i]);
     }
 
     printf("\n");
