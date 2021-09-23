@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// for debugging
-#define LOG(MSG)             \
-    {                        \
-        printf("%s\n", MSG); \
-    }
-
 // size of process address space
 #define MAX_PAS_LENGTH 500
 
@@ -152,13 +146,11 @@ int main(int argc, char **argv)
 
             if (BP == GP)
             {
-
                 DP++;
                 pas[DP] = instr.M;
             }
             else
             {
-
                 SP--;
                 pas[SP] = instr.M;
             }
@@ -284,12 +276,12 @@ int main(int argc, char **argv)
                 if (BP == GP)
                 {
                     DP--;
-                    pas[DP] = (pas[DP] == pas[DP + 1]) ? 0 : 1;
+                    pas[DP] = (pas[DP] == pas[DP + 1]);
                 }
                 else
                 {
                     SP++;
-                    pas[SP] = (pas[SP] == pas[SP - 1]) ? 0 : 1;
+                    pas[SP] = (pas[SP] == pas[SP - 1]);
                 }
                 break;
             }
@@ -299,12 +291,12 @@ int main(int argc, char **argv)
                 if (BP == GP)
                 {
                     DP--;
-                    pas[DP] = (pas[DP] != pas[DP + 1]) ? 0 : 1;
+                    pas[DP] = (pas[DP] != pas[DP + 1]);
                 }
                 else
                 {
                     SP++;
-                    pas[SP] = (pas[SP] != pas[SP - 1]) ? 0 : 1;
+                    pas[SP] = (pas[SP] != pas[SP - 1]);
                 }
                 break;
             }
@@ -314,12 +306,12 @@ int main(int argc, char **argv)
                 if (BP == GP)
                 {
                     DP--;
-                    pas[DP] = (pas[DP] < pas[DP + 1]) ? 0 : 1;
+                    pas[DP] = (pas[DP] < pas[DP + 1]);
                 }
                 else
                 {
                     SP++;
-                    pas[SP] = (pas[SP] < pas[SP - 1]) ? 0 : 1;
+                    pas[SP] = (pas[SP] < pas[SP - 1]);
                 }
                 break;
             }
@@ -329,12 +321,12 @@ int main(int argc, char **argv)
                 if (BP == GP)
                 {
                     DP--;
-                    pas[DP] = (pas[DP] <= pas[DP + 1]) ? 0 : 1;
+                    pas[DP] = (pas[DP] <= pas[DP + 1]);
                 }
                 else
                 {
                     SP++;
-                    pas[SP] = (pas[SP] <= pas[SP - 1]) ? 0 : 1;
+                    pas[SP] = (pas[SP] <= pas[SP - 1]);
                 }
                 break;
             }
@@ -344,12 +336,12 @@ int main(int argc, char **argv)
                 if (BP == GP)
                 {
                     DP--;
-                    pas[DP] = (pas[DP] > pas[DP + 1]) ? 0 : 1;
+                    pas[DP] = (pas[DP] > pas[DP + 1]);
                 }
                 else
                 {
                     SP++;
-                    pas[SP] = (pas[SP] > pas[SP - 1]) ? 0 : 1;
+                    pas[SP] = (pas[SP] > pas[SP - 1]);
                 }
                 break;
             }
@@ -359,12 +351,12 @@ int main(int argc, char **argv)
                 if (BP == GP)
                 {
                     DP--;
-                    pas[DP] = (pas[DP] >= pas[DP + 1]) ? 0 : 1;
+                    pas[DP] = (pas[DP] >= pas[DP + 1]);
                 }
                 else
                 {
                     SP++;
-                    pas[SP] = (pas[SP] >= pas[SP - 1]) ? 0 : 1;
+                    pas[SP] = (pas[SP] >= pas[SP - 1]);
                 }
                 break;
             }
@@ -379,22 +371,18 @@ int main(int argc, char **argv)
             strcpy(opname, "LOD");
             if (BP == GP)
             {
-
                 DP++;
                 pas[DP] = pas[GP + M];
             }
             else
             {
-
-                if (base(instr.L))
+                if (base(instr.L) == GP)
                 {
-
                     SP--;
                     pas[SP] = pas[GP + instr.M];
                 }
                 else
                 {
-
                     SP--;
                     pas[SP] = pas[base(instr.L) - M];
                 }
@@ -407,22 +395,18 @@ int main(int argc, char **argv)
             strcpy(opname, "STO");
             if (BP == GP)
             {
-
-                pas[GP + instr.M] = pas[SP];
-                SP++;
+                pas[GP + instr.M] = pas[DP];
+                DP--;
             }
             else
             {
-
                 if (base(instr.L) == GP)
                 {
-
                     pas[GP + instr.M] = pas[SP];
                     SP++;
                 }
                 else
                 {
-
                     pas[base(instr.L) - M] = pas[SP];
                     SP++;
                 }
@@ -453,7 +437,6 @@ int main(int argc, char **argv)
         }
         case JMP:
         {
-
             PC = instr.M;
             strcpy(opname, "JMP");
             break;
@@ -463,16 +446,18 @@ int main(int argc, char **argv)
             strcpy(opname, "JPC");
             if (BP == GP)
             {
-
                 if (pas[DP] == 0)
+                {
                     PC = instr.M;
+                }
                 DP--;
             }
             else
             {
-
                 if (pas[SP] == 0)
+                {
                     PC = instr.M;
+                }
                 SP++;
             }
 
