@@ -9,7 +9,7 @@
 int pas[MAX_PAS_LENGTH];
 
 // assumed max byte size of an instruction line
-#define MAX_INSTR_SIZE 10
+#define MAX_INSTR_SIZE 32
 
 // instruction register
 struct IR
