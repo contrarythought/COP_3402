@@ -1,3 +1,7 @@
+/* GROUP MEMBERS: Anthony Thorpe, Jimmie Smith, Daniel Guzman, Bruce Frcek */
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
