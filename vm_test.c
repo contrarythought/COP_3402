@@ -119,7 +119,8 @@ int main(int argc, char **argv)
     int halt = 0; // halt flag
     IR instr;     // instruction register
 
-    /** TODO - NEED TO PRINT OUT HEADER **/
+    printf("\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
+    printf("Initial values:\t\t\t0\t60\t500\t59\n");
 
     while (!halt)
     {
