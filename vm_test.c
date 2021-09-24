@@ -9,7 +9,7 @@
 int pas[MAX_PAS_LENGTH];
 
 // assumed max byte size of an instruction line
-#define MAX_INSTR_SIZE 8
+#define MAX_INSTR_SIZE 10
 
 // instruction register
 struct IR
@@ -503,8 +503,9 @@ int main(int argc, char **argv)
             case 3:
                 printf("End of Program\n");
                 halt = 1;
+                break;
             }
-            break;
+            //break;
         }
         }
 
