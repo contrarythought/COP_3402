@@ -41,7 +41,6 @@ lexeme *lexanalyzer(char *input)
 			if(isalpha(*input_ptr))
 			{
 				// find out what the terminal is (reserved terminal (while, const, if, etc)? identifier (programmer provided variable)?)
-				// if reserved_or_identifier == 0, then err_type will be assigned an error num and will be the input for printlexerror
 				// will need to create a lexeme inside this function
 				reserved_or_identifier(input_ptr, &err_type);
 
