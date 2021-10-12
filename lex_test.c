@@ -25,44 +25,73 @@ int lex_index;
 void printlexerror(int type);
 void printtokens();
 
-
 lexeme *lexanalyzer(char *input)
 {
-	lex_index = 0, err_type = 0;
+	int  err_type = 0, index = 0;
 	char *input_ptr = input;
-	
+
 	// loop through each character in the input	
 	while(*input_ptr)
 	{
-		// if character is not whitespace, analyze it further
-		if(!isspace(*input_ptr))
-		{
-			// if character is a letter
-			if(isalpha(*input_ptr))
-			{
-				// find out what the terminal is (reserved terminal (while, const, if, etc)? identifier (programmer provided variable)?)
-				// will need to create a lexeme inside this function
-				reserved_or_identifier(input_ptr, &err_type);
+        // skip white space
+        while(isspace(*input_ptr))
+            input_ptr++;
+        
+		switch(*input_ptr) {
 
-				if(err_type > 0)
-					printlexerror(err_type);
-				else 
-					lex_index++;
-					
-			}
+            // for single char terminals
+			case ';' :
+				list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+				list[index].type = semicolonsym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+				break;
+			case '+' :
+				list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+				list[index].type = addsym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+				break;
+            case '-' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = subsym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            case '*' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = multsym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            case '%' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = modsym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            case '(' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = lparensym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            case ')' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = rparensym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            case ',' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = commasym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            case '.' :
+                list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+                list[index].type = periodsym;
+                memset(list[index].name, 0, sizeof(list[index].name));
+                break;
+            default : 
+                // check for multichar terminals, numbers, identifiers, etc
+                    
 
-			// if character is a number
-			else if(isdigit(*input_ptr))
-			{
-				// TODO
-			}
-				
 		}
-		else 
-		{
-			input_ptr++;
-			continue;
-		}
+        
+        input_ptr++;
 	}
 	
 	return NULL;
