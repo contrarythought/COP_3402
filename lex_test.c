@@ -189,13 +189,6 @@ lexeme *lexanalyzer(char *input)
 					printlexerror(err_type);
 			}
 
-			// check if *input_ptr is a comment
-			else if (*input_ptr == '/')
-			{
-				if (!check_comment(&input_ptr, &err_type))
-					printlexerror(&err_type);
-			}
-
 			// invalid input
 			else
 				printlexerror(5);
