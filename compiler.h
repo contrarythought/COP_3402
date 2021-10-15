@@ -4,6 +4,22 @@
 	readme file, otherwise you will lose 5 points.
 */
 
+/* reserved words */
+#define CONST "const"
+#define WHILE "while"
+#define VAR "var"
+#define BEGIN "begin"
+#define END "end"
+#define DO "do"
+#define IF "if"
+#define THEN "then"
+#define ELSE "else"
+#define CALL "call"
+#define WRITE "write"
+#define READ "read"
+#define NUM "numbers"
+#define ODD "odd"
+
 typedef enum token_type {
 	constsym = 1, varsym, procsym, beginsym, endsym, whilesym, dosym, 
 	ifsym, thensym, elsesym, callsym, writesym, readsym, identsym, 
