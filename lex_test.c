@@ -23,11 +23,26 @@ int lex_index;
 
 void printlexerror(int type);
 void printtokens();
+int ident_reserved(char **input_ptr, int *err_type);
+int number(char **input_ptr, int *err_type);
+
+// TODO
+int number(char **input_ptr, int *err_type) {
+
+}
+
+// TODO
+int ident_reserved(char **input_ptr, int *err_type) {
+
+}
 
 lexeme *lexanalyzer(char *input)
 {
 	int err_type = 0, index = 0;
 	char *input_ptr = input;
+
+	// initialize string array
+
 
 	// loop through each character in the input
 	while (*input_ptr)
@@ -94,6 +109,8 @@ lexeme *lexanalyzer(char *input)
 			input_ptr++;
 			index++;
 			break;
+		
+		// multichar symbols
 		case '!':
 			if (*(input_ptr + 1) == '=')
 			{
