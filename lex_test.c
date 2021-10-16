@@ -20,29 +20,34 @@
 
 lexeme *list;
 int lex_index;
+char iden_buff[MAX_IDENT_LEN];
+const char *rw[14]; // reserved words
+rw[0] = "const";
+rw[1] = "var";
+rw[2] = "procedure";
+rw[3] = "begin";
+rw[4] = "end";
+rw[5] = "while";
+rw[6] = "do";
+rw[7] = "if";
+rw[8] = "then";
+rw[9] = "else";
+rw[10] = "call";
+rw[11] = "write";
+rw[12] = "read";
+rw[13] = "odd";
+
+
+
+
 
 void printlexerror(int type);
 void printtokens();
-int ident_reserved(char **input_ptr, int *err_type);
-int number(char **input_ptr, int *err_type);
-
-// TODO
-int number(char **input_ptr, int *err_type) {
-
-}
-
-// TODO
-int ident_reserved(char **input_ptr, int *err_type) {
-
-}
 
 lexeme *lexanalyzer(char *input)
 {
 	int err_type = 0, index = 0;
 	char *input_ptr = input;
-
-	// initialize string array
-
 
 	// loop through each character in the input
 	while (*input_ptr)
@@ -109,8 +114,6 @@ lexeme *lexanalyzer(char *input)
 			input_ptr++;
 			index++;
 			break;
-		
-		// multichar symbols
 		case '!':
 			if (*(input_ptr + 1) == '=')
 			{
@@ -195,10 +198,97 @@ lexeme *lexanalyzer(char *input)
 			// if *input_ptr is a letter, check for identifier or reserved vocab (const, while, for, etc)
 			if (isalpha(*input_ptr))
 			{
-				if (!ident_reserved(&input_ptr, &err_type))
-					printlexerror(err_type);
-			}
+				int i;
+				iden_buff[0] = *input_ptr;
+				input_ptr++;
+				index++;
 
+				// check if it's letter or digit, else it's invalid token
+				// if the length is >11, then it's an excess char length error
+				// if space, break from the loop then compare it with reserved words
+				for(i = 1; i <= MAX_IDENT_LEN; i++) {
+					if(isspace(*input_ptr)){
+						input_ptr++;
+						index++;
+						break;
+					} else if(isdigit(*input_ptr) || isalpha(*input)){
+						iden_buff[i] = *input_ptr;
+						input_ptr++;
+						index++;
+					} else if(i == MAX_IDENT_LEN) {
+						printlexerror(4);
+					} else {
+						printlexerror(2);
+					}
+				}
+
+				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
+
+
+				// check the type of string
+				for(i = 0; i <= 14; i++) {
+					
+					if(strcmp(iden_buff, rw[i]) == 0) {
+						switch (i)
+						{
+						case 0:
+							list[index].type = constsym;
+							break;
+						case 1:
+							list[index].type = varsym;
+							break;
+						case 2:
+							list[index].type = procsym;
+							break;
+						case 3:
+							list[index].type = beginsym;
+							break;
+						case 4:
+							list[index].type = endsym;
+							break;
+						case 5:
+							list[index].type = whilesym;
+							break;
+						case 6:
+							list[index].type = dosym;
+							break;
+						case 7:
+							list[index].type = ifsym;
+							break;
+						case 8:
+							list[index].type = thensym;
+							break;
+						case 9:
+							list[index].type = elsesym;
+							break;
+						case 10:
+							list[index].type = callsym;
+							break;
+						case 11:
+							list[index].type = writesym;
+							break;
+						case 12:
+							list[index].type = readsym;
+							break;
+						case 13:
+							list[index].type = oddsym;
+							break;
+						default:
+							break;
+						} 
+					} else {
+						list[index].type = identsym;
+					}
+
+				}
+				
+				input_ptr++;
+				index++;
+				break;
+				/*if (!ident_reserved(&input_ptr, &err_type))
+					printlexerror(err_type);*/
+			}
+			
 			// check if *input_ptr is a number
 			else if (isdigit(*input_ptr))
 			{
@@ -211,6 +301,9 @@ lexeme *lexanalyzer(char *input)
 				printlexerror(5);
 			break;
 		}
+
+	
+
 	}
 
 	return NULL;
