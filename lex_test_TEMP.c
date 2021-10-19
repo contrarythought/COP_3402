@@ -119,8 +119,15 @@ lexeme *lexanalyzer(char *input)
 
 	while (*input_ptr)
 	{	
+		/*
+		if(list) {
+			for(int i = 0; i < index; i++) {
+				printf("%d | %d | %s \n", list[i].value, list[i].type, list[i].name);
+			}
+		}
+		*/
 		printf("%c\n", *input_ptr); /* DELETE */
-		sleep(4);
+		//sleep(1);
 
 		switch (*input_ptr)
 		{
@@ -368,6 +375,7 @@ lexeme *lexanalyzer(char *input)
 		//input_ptr++;
 	}
 
+	lex_index = index;
 	return list;
 }
 
