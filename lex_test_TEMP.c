@@ -71,6 +71,8 @@ int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words,
 	
 	// extract word
 	int i;
+
+	// RUSHED THE LOGIC HERE, PROBABLY BETTER WAY TO WRITE THIS
 	for(i = 0; (isalpha(**input_ptr) || isdigit(**input_ptr)) && **input_ptr; (*input_ptr)++, i++) {
 		if((i + 1) > MAX_IDENT_LEN) {
 			*err_type = 4;
@@ -127,7 +129,7 @@ lexeme *lexanalyzer(char *input)
 		}
 		*/
 		printf("%c\n", *input_ptr); /* DELETE */
-		sleep(1);
+		//sleep(1);
 
 		switch (*input_ptr)
 		{
