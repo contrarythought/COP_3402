@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
+	printtokens();
 	// code = parse(list);
 	// if (code == NULL)
 	// {
