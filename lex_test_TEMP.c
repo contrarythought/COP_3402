@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h> /* DELETE */
 #include "compiler.h"
 #define MAX_NUMBER_TOKENS 500
 #define MAX_IDENT_LEN 11
@@ -26,7 +27,7 @@ const char *rw[NUM_RESERVED]; // reserved words
 
 void printlexerror(int type);
 void printtokens();
-int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words, char **result, int *rw_index);
+int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words, char *result, int *rw_index);
 int number(char **input_ptr, int *err_type, int *result);
 
 int number(char **input_ptr, int *err_type, int *result)
@@ -47,55 +48,48 @@ int number(char **input_ptr, int *err_type, int *result)
 	if(isalpha(**input_ptr)) {
 		*err_type = 2;
 		return 0;
-	} else 
+	} else {
+
+		// get to the next token
+		while(isspace(**input_ptr))
+			(*input_ptr)++;
+
 		return 1;
+	}
 	
 	return 0;
 }
 
 // TODO
-int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words, char **result, int *rw_index)
+int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words, char *result, int *rw_index)
 {
 	char word_buffer[MAX_IDENT_LEN + 1]; // will hold an identifier
-	char *ptr = *input_ptr;
+	//char *ptr = *input_ptr;
 	int iden_len = 0; // cannot be > MAX_IDENT_LEN
 
 	memset(word_buffer, 0, sizeof(word_buffer)); // zero out word_buffer
-
-	// extract a word
+	
+	// extract word
 	int i;
-	for (i = 0; !isspace(*ptr) && *ptr; i++)
-	{
-
-		// exit with failure if identifier has a length > MAX_IDENT_LEN
-		if ((i + 1) > MAX_IDENT_LEN)
-		{
+	for(i = 0; isalpha(**input_ptr) && **input_ptr; (*input_ptr)++, i++) {
+		if((i + 1) > MAX_IDENT_LEN) {
 			*err_type = 4;
-
-			// get ptr to whitespace
-			while (!isspace(*ptr))
-				ptr++;
-
-			// set original ptr to current location
-			*input_ptr = ptr;
-
 			return 0;
 		}
 
-		word_buffer[i] = ptr[i];
+		word_buffer[i] = **input_ptr;
 	}
 
-	strcpy(*result, word_buffer);
+	// get to start of next token
+	while(isspace(**input_ptr))
+		(*input_ptr)++;
 
-	// compare the word to the list of reserved words
-	for (i = 0; i < NUM_RESERVED; i++)
-	{
-		if (strcmp(*result, reserved_words[i]) == 0)
-		{
+	for(i = 0; i < NUM_RESERVED; i++) {
+		if(strcmp(word_buffer, reserved_words[i]) == 0)
 			*rw_index = i;
-			return 1;
-		}
 	}
+
+	strcpy(result, word_buffer);
 
 	return 1;
 }
@@ -124,11 +118,9 @@ lexeme *lexanalyzer(char *input)
 	// list = (lexeme *) malloc(sizeof(lexeme) * MAX_NUMBER_TOKENS);
 
 	while (*input_ptr)
-	{
-		//printf("%c", *input_ptr); /* DELETE */
-
-		// for (; isspace(*input_ptr); input_ptr++)
-		//	;
+	{	
+		printf("%c\n", *input_ptr); /* DELETE */
+		sleep(4);
 
 		switch (*input_ptr)
 		{
@@ -196,8 +188,9 @@ lexeme *lexanalyzer(char *input)
 				index++;
 			}
 			else {
-				printf("here !\n");
+				//printf("here !\n");
 				printlexerror(1); // invalid symbol
+				exit(EXIT_FAILURE);
 			}
 				
 			break;
@@ -210,8 +203,9 @@ lexeme *lexanalyzer(char *input)
 				index++;
 			}
 			else {
-				printf("here :\n");
+				//printf("here :\n");
 				printlexerror(1);
+				exit(EXIT_FAILURE);
 			}
 				
 			break;
@@ -224,8 +218,9 @@ lexeme *lexanalyzer(char *input)
 				index++;
 			}
 			else {
-				printf("here =\n");
+				//printf("here =\n");
 				printlexerror(1);
+				exit(EXIT_FAILURE);
 			}
 				
 			break;
@@ -278,15 +273,84 @@ lexeme *lexanalyzer(char *input)
 			// if *input_ptr is a letter, check for identifier or reserved vocab (const, while, for, etc)
 			if (isalpha(*input_ptr))
 			{
-				
+				char result[MAX_IDENT_LEN + 1];
+				int rw_index = -1;
+				if(!ident_reserved(&input_ptr, &err_type, rw, result, &rw_index)) {
+					printlexerror(err_type);
+					exit(EXIT_FAILURE);
+				} else {
+					list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
+
+					// copy result into name
+					strcpy(list[index].name, result);
+
+					// rw_index is still -1, then result is an identifier
+					if(rw_index == -1) 
+						list[index].type = identsym;
+					
+					// otherwise, assign type to the correct reserved word
+					else {
+						
+						switch(rw_index) {
+							case 0:
+								list[index].type = constsym;
+								break;
+							case 1:
+								list[index].type = varsym;
+								break;
+							case 2:
+								list[index].type = procsym;
+								break;
+							case 3:
+								list[index].type = beginsym;
+								break;
+							case 4:
+								list[index].type = endsym;
+								break;
+							case 5:
+								list[index].type = whilesym;
+								break;
+							case 6:
+								list[index].type = dosym;
+								break;
+							case 7:
+								list[index].type = ifsym;
+								break;
+							case 8:
+								list[index].type = thensym;
+								break;
+							case 9:
+								list[index].type = elsesym;
+								break;
+							case 10:
+								list[index].type = callsym;
+								break;
+							case 11:
+								list[index].type = writesym;
+								break;
+							case 12:
+								list[index].type = readsym;
+								break;
+							case 13:
+								list[index].type = oddsym;
+								break;
+						}
+
+					}
+					
+					// increment index for the next lexeme
+					index++;
+				}
 			}
 
 			// check if *input_ptr is a number
 			else if (isdigit(*input_ptr))
 			{
 				int result = 0;
-				if(!number(&input_ptr, &err_type, &result))
+				if(!number(&input_ptr, &err_type, &result)) {
 					printlexerror(err_type);
+					exit(EXIT_FAILURE);
+				}
 				else {
 					list = (lexeme *) realloc(list, sizeof(lexeme) * (index + 1));
 					list[index].type = numbersym;
@@ -301,10 +365,10 @@ lexeme *lexanalyzer(char *input)
 			break;
 		}
 
-		input_ptr++;
+		//input_ptr++;
 	}
 
-	return NULL;
+	return list;
 }
 
 void printtokens()
