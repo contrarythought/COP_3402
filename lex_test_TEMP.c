@@ -71,7 +71,7 @@ int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words,
 	
 	// extract word
 	int i;
-	for(i = 0; isalpha(**input_ptr) && **input_ptr; (*input_ptr)++, i++) {
+	for(i = 0; (isalpha(**input_ptr) || isdigit(**input_ptr)) && **input_ptr; (*input_ptr)++, i++) {
 		if((i + 1) > MAX_IDENT_LEN) {
 			*err_type = 4;
 			return 0;
@@ -90,7 +90,7 @@ int ident_reserved(char **input_ptr, int *err_type, const char **reserved_words,
 	}
 
 	strcpy(result, word_buffer);
-
+	printf("%s\n", result); 
 	return 1;
 }
 
@@ -127,7 +127,7 @@ lexeme *lexanalyzer(char *input)
 		}
 		*/
 		printf("%c\n", *input_ptr); /* DELETE */
-		//sleep(1);
+		sleep(1);
 
 		switch (*input_ptr)
 		{
@@ -135,54 +135,95 @@ lexeme *lexanalyzer(char *input)
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = semicolonsym;
 			input_ptr++;
+
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 			index++;
 			break;
 		case '+':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = addsym;
 			input_ptr++;
+
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 			index++;
 			break;
 		case '-':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = subsym;
 			input_ptr++;
+
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+			
 			index++;
 			break;
 		case '*':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = multsym;
 			input_ptr++;
+
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 			index++;
 			break;
 		case '%':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = modsym;
 			input_ptr++;
+
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+		
 			index++;
 			break;
 		case '(':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = lparensym;
 			input_ptr++;
+
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 			index++;
 			break;
 		case ')':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = rparensym;
 			input_ptr++;
+
+			// get to next token
+			while(isspace(*input_ptr))
+				input_ptr++;
+
 			index++;
 			break;
 		case ',':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = commasym;
 			input_ptr++;
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
 			index++;
 			break;
 		case '.':
 			list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 			list[index].type = periodsym;
 			input_ptr++;
+			// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
 			index++;
 			break;
 		// multichar symbols
@@ -192,6 +233,11 @@ lexeme *lexanalyzer(char *input)
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = neqsym;
 				input_ptr += 2; // advance pass the '='
+
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 				index++;
 			}
 			else {
@@ -207,6 +253,11 @@ lexeme *lexanalyzer(char *input)
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = assignsym;
 				input_ptr += 2;
+
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 				index++;
 			}
 			else {
@@ -222,6 +273,11 @@ lexeme *lexanalyzer(char *input)
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = eqlsym;
 				input_ptr += 2;
+
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 				index++;
 			}
 			else {
@@ -237,6 +293,11 @@ lexeme *lexanalyzer(char *input)
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = leqsym;
 				input_ptr += 2;
+
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 				index++;
 			}
 			else
@@ -253,6 +314,11 @@ lexeme *lexanalyzer(char *input)
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = geqsym;
 				input_ptr += 2;
+
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
+
 				index++;
 			}
 			else
@@ -260,6 +326,9 @@ lexeme *lexanalyzer(char *input)
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = gtrsym;
 				input_ptr++;
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
 				index++;
 			}
 			break;
@@ -268,12 +337,19 @@ lexeme *lexanalyzer(char *input)
 			{
 				for (; *input_ptr != '\n'; input_ptr++)
 					;
+				
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
 			}
 			else
 			{
 				list = (lexeme *)realloc(list, sizeof(lexeme) * (index + 1));
 				list[index].type = divsym;
 				index++;
+				// get to next token
+				while(isspace(*input_ptr))
+					input_ptr++;
 			}
 			break;
 		default:
