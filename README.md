@@ -11,4 +11,4 @@ lex.c by Anthony Thorpe, Jimmie Smith, Daniel Guzman, Bruce Frcek
 How to Compile:
 1. Go to directory that contains lex.c, driver.c, and compiler.h.
 2. Type 'make', then you will have an executable called 'a.out'.
-3. Type './a.out <input_file.txt>', then the results will prit out on the terminal.
+3. Type './a.out <input_file.txt>', then the results will print out on the terminal.
