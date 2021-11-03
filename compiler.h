@@ -24,6 +24,15 @@ typedef struct instruction {
 	int m;
 } instruction;
 
-lexeme *lexanalyzer(char *input);
-instruction *parse(lexeme *list);
-void execute_program(instruction *code);
+typedef struct symbol {
+	int kind;
+	char name[12];
+	int val;
+	int level;
+	int addr;
+	int mark;
+} symbol;
+
+lexeme *lexanalyzer(char *input, int printFlag);
+instruction *parse(lexeme *list, int printTable, int printCode);
+void execute_program(instruction *code, int printFlag);
