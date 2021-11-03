@@ -20,13 +20,29 @@ void printassemblycode();
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
 	code = NULL;
+
+	// malloc MAX_CODE_LENGTH amount of memory for code
+	code = (instruction *) malloc(sizeof(instruction) * MAX_CODE_LENGTH);
+
+	// malloc MAX_SYMBOL_COUNT for table
+	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
+
+	int listIndex;
+	for(listIndex = 0, cIndex = 0; list[listIndex].type; listIndex++, cIndex++) {
+		printf("%d %s\n", list[listIndex].type, list[listIndex].name);
+	}
+
+
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
 		when you test your code otherwise IT WILL SEGFAULT in 
 		vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
 		WHEN COPYING IT TO THE PAS
 	*/
+
+	// I believe this is the end of the function
 	code[cIndex].opcode = -1;
 	
+	//printf("finished\n");
 	return code;
 }
 
