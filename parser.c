@@ -11,11 +11,65 @@ int cIndex;
 symbol *table;
 int tIndex;
 
+/* added these variable */
+int level;
+int listIndex;
+
 void emit(int opname, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
 void printparseerror(int err_code);
 void printsymboltable();
 void printassemblycode();
+
+/* grammar function declarations */
+void program(lexeme *list);
+void block();
+void constDeclare();
+int varDeclare();
+
+enum
+{
+	UNMARKED, 
+	MARKED
+};
+
+/* grammar function definitions */
+void program(lexeme *list) {
+	emit(7, 0, 0); // EMIT JMP - NOT SURE IF CORRECT
+	addToSymbolTable(3, "main", 0, 0, 0, UNMARKED);
+	level = -1;
+
+	// execute block
+	block();
+
+	if(list[listIndex].type != periodsym) 
+		printparseerror(1);
+
+	emit(9, 0, 3); // EMIT HALT - NOT SURE IF CORRECT
+
+	/* 
+	for each line in code
+		if line has OPR 5 (CALL)
+			code[line].m = table[code[line].m].addr
+	code[0].m = table[0].addr
+	*/
+
+}
+
+void block() {
+	level++;
+	
+	// DON'T KNOW WHAT THIS IS
+	int procedure_idx = tIndex - 1;
+
+	constDeclare();
+
+	// numVars = number of variables declared
+	int numVars = varDeclare();
+
+
+}
+
 
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
@@ -27,11 +81,10 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	// malloc MAX_SYMBOL_COUNT for table
 	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 
-	int listIndex;
-	for(listIndex = 0, cIndex = 0; list[listIndex].type; listIndex++, cIndex++) {
-		printf("%d %s\n", list[listIndex].type, list[listIndex].name);
-	}
+	listIndex = 0;
+	while(1) {
 
+	}
 
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
 		when you test your code otherwise IT WILL SEGFAULT in 
