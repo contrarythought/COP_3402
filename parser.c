@@ -23,9 +23,12 @@ void printassemblycode();
 
 /* grammar function declarations */
 void program(lexeme *list);
-void block();
-void constDeclare();
-int varDeclare();
+void block(lexeme *list);
+void constDeclare(lexeme *list);
+int varDeclare(lexeme *list);
+void procDeclare();
+void statement();
+void mark();
 
 enum
 {
@@ -40,7 +43,7 @@ void program(lexeme *list) {
 	level = -1;
 
 	// execute block
-	block();
+	block(list);
 
 	if(list[listIndex].type != periodsym) 
 		printparseerror(1);
@@ -48,6 +51,7 @@ void program(lexeme *list) {
 	emit(9, 0, 3); // EMIT HALT - NOT SURE IF CORRECT
 
 	/* 
+	TODO
 	for each line in code
 		if line has OPR 5 (CALL)
 			code[line].m = table[code[line].m].addr
@@ -56,20 +60,121 @@ void program(lexeme *list) {
 
 }
 
-void block() {
+void block(lexeme *list) {
 	level++;
 	
 	// DON'T KNOW WHAT THIS IS
 	int procedure_idx = tIndex - 1;
 
-	constDeclare();
+	constDeclare(list);
 
 	// numVars = number of variables declared
-	int numVars = varDeclare();
+	int numVars = varDeclare(list);
 
+	procDeclare();
+
+	table[procedure_idx].addr = cIndex * 3; // DON'T UNDERSTAND THIS
+
+	if(level == 0)
+		emit(6, level, numVars); // WHY DOES M = numVars?
+	else
+		emit(6, level, numVars + 3);
+	
+	statement();
+	mark();
+
+	level--;
 
 }
 
+void constDeclare(lexeme *list) {
+	if(list[listIndex].type == constsym) {
+		do {
+			// get next token
+			listIndex++;
+
+			if(list[listIndex].type != identsym)
+				printparseerror(2); // NOT SURE IF RIGHT
+
+			int symidx = multipleDeclareCheck(); // TODO 
+			if(symidx == -1)
+				printparseerror(19); // NOT SURE IF RIGHT
+			
+			// save ident name
+			int len = strlen(list[listIndex].name);
+			char *saveName = (char *) malloc(len + 1);
+			strcpy(saveName, list[listIndex].name);
+
+			// get next token
+			listIndex++;
+
+			if(list[listIndex].type != assignsym)
+				printparseerror(2); // NOT SURE IF RIGHT
+			
+			// get next token
+			listIndex++;
+
+			if(list[listIndex].type != numbersym)
+				printparseerror(2); // NOT SURE IF RIGHT
+			
+			// add to symbol table
+			addToSymbolTable(1, saveName, list[listIndex].value, level, 0, UNMARKED); // PLEASE CHECK
+			free(saveName); // free here, because don't think I have any use for saveName after inserting into symbol table
+
+			// get next token
+			listIndex++;
+		} while(list[listIndex].type == commasym);
+	}
+
+	if(list[listIndex].type != semicolonsym) {
+		if(list[listIndex].type == identsym)
+			printparseerror(2); // NOT SURE IF RIGHT
+		else 
+			printparseerror(2); // NOT SURE IF RIGHT
+	}
+
+	// get next token
+	listIndex++;
+}
+
+int varDeclare(lexeme *list) {
+	int numVars = 0;
+	if(list[listIndex].type == varsym) {
+		do {
+			numVars++;
+
+			// get next token
+			listIndex++;
+
+			if(list[listIndex].type != identsym)
+				printparseerror(3); // PLEASE CHECK
+
+			int symidx = multipleDeclareCheck(list[listIndex].type); // NEED TO IMPLEMENT
+			if(symidx != -1)
+				printparseerror(19); // NOT SURE IF CORRECT
+			
+			if(level == 0)
+				addToSymbolTable(2, list[listIndex].name, 0, level, numVars - 1, UNMARKED);
+			else
+				addToSymbolTable(2, list[listIndex].name, 0, level, numVars + 2, UNMARKED);
+
+			// get next token
+			listIndex++;
+		} while(list[listIndex].type == commasym);
+
+		if(list[listIndex].type != semicolonsym) {
+			if(list[listIndex].type == identsym)
+				printparseerror(3); // PLEASE CHECK
+			else 
+				printassemblycode(3); // PLEASE CHECK
+		}
+
+		// get next token
+		listIndex++;
+	}
+	
+	return numVars;
+}
 
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
@@ -82,9 +187,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 
 	listIndex = 0;
-	while(1) {
-
-	}
+	
 
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
 		when you test your code otherwise IT WILL SEGFAULT in 
