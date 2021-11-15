@@ -83,8 +83,8 @@ void block(lexeme *list) {
 	else
 		emit(6, level, numVars + 3);
 	
-	statement();
-	mark();
+	statement(); // NEED TO IMPLEMENT
+	mark(); // NEED TO IMPLEMENT
 
 	level--;
 
