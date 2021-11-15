@@ -26,7 +26,7 @@ void program(lexeme *list);
 void block(lexeme *list);
 void constDeclare(lexeme *list);
 int varDeclare(lexeme *list);
-void procDeclare();
+void procDeclare(lexeme *list);
 void statement();
 void mark();
 
@@ -45,8 +45,11 @@ void program(lexeme *list) {
 	// execute block
 	block(list);
 
-	if(list[listIndex].type != periodsym) 
+	if(list[listIndex].type != periodsym) {
 		printparseerror(1);
+		//return NULL;
+	}
+		
 
 	emit(9, 0, 3); // EMIT HALT - NOT SURE IF CORRECT
 
@@ -71,7 +74,7 @@ void block(lexeme *list) {
 	// numVars = number of variables declared
 	int numVars = varDeclare(list);
 
-	procDeclare();
+	procDeclare(list);
 
 	table[procedure_idx].addr = cIndex * 3; // DON'T UNDERSTAND THIS
 
@@ -93,12 +96,18 @@ void constDeclare(lexeme *list) {
 			// get next token
 			listIndex++;
 
-			if(list[listIndex].type != identsym)
+			if(list[listIndex].type != identsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
+				//return NULL;
+			}
+				
 
-			int symidx = multipleDeclareCheck(); // TODO 
-			if(symidx == -1)
+			int symidx = multipleDeclareCheck(list[listIndex]); /** TODO **/ 
+			if(symidx == -1) {
 				printparseerror(19); // NOT SURE IF RIGHT
+				//return NULL;
+			}
+				
 			
 			// save ident name
 			int len = strlen(list[listIndex].name);
@@ -108,14 +117,19 @@ void constDeclare(lexeme *list) {
 			// get next token
 			listIndex++;
 
-			if(list[listIndex].type != assignsym)
+			if(list[listIndex].type != assignsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
-			
+				//return NULL;
+			}
+				
 			// get next token
 			listIndex++;
 
-			if(list[listIndex].type != numbersym)
+			if(list[listIndex].type != numbersym) {
 				printparseerror(2); // NOT SURE IF RIGHT
+				//return NULL;
+			}
+				
 			
 			// add to symbol table
 			addToSymbolTable(1, saveName, list[listIndex].value, level, 0, UNMARKED); // PLEASE CHECK
@@ -127,10 +141,14 @@ void constDeclare(lexeme *list) {
 	}
 
 	if(list[listIndex].type != semicolonsym) {
-		if(list[listIndex].type == identsym)
+		if(list[listIndex].type == identsym) {
 			printparseerror(2); // NOT SURE IF RIGHT
-		else 
+			//return NULL;
+		} else {
 			printparseerror(2); // NOT SURE IF RIGHT
+			//return NULL;
+		}
+			
 	}
 
 	// get next token
@@ -146,27 +164,36 @@ int varDeclare(lexeme *list) {
 			// get next token
 			listIndex++;
 
-			if(list[listIndex].type != identsym)
+			if(list[listIndex].type != identsym) {
 				printparseerror(3); // PLEASE CHECK
+				//return NULL;
+			}
+				
 
-			int symidx = multipleDeclareCheck(list[listIndex].type); // NEED TO IMPLEMENT
+			int symidx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
 			if(symidx != -1)
 				printparseerror(19); // NOT SURE IF CORRECT
 			
-			if(level == 0)
+			if(level == 0) {
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars - 1, UNMARKED);
-			else
+				//return NULL;
+			} else {
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars + 2, UNMARKED);
-
+				//return NULL;
+			}
+		
 			// get next token
 			listIndex++;
 		} while(list[listIndex].type == commasym);
 
 		if(list[listIndex].type != semicolonsym) {
-			if(list[listIndex].type == identsym)
+			if(list[listIndex].type == identsym) {
 				printparseerror(3); // PLEASE CHECK
-			else 
-				printassemblycode(3); // PLEASE CHECK
+				//return;
+			} else {
+				printparseerror(3); // PLEASE CHECK
+				//return;
+			}
 		}
 
 		// get next token
@@ -174,6 +201,48 @@ int varDeclare(lexeme *list) {
 	}
 	
 	return numVars;
+}
+
+void procDeclare(lexeme *list) {
+	while(list[listIndex].type == procsym) {
+		// get next token
+		listIndex++;
+		
+		if(list[listIndex].type != identsym) {
+			printparseerror(4); // DOUBLE CHECK
+			//return;
+		}
+		int symidx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
+		if(symidx != -1) {
+			printparseerror(19); // NOT SURE IF CORRECT
+			//return;
+		}	
+			
+		addToSymbolTable(3, list[listIndex].name, 0, level, 0, UNMARKED);
+
+		// get next token
+		listIndex++;
+
+		if(list[listIndex].type != semicolonsym) {
+			printparseerror(4); // DOUBLE CHECK
+			//return;
+		}
+
+		// get next token
+		listIndex++;
+
+		block(list);
+
+		if(list[listIndex].type != semicolonsym) {
+			printparseerror(4); // NOT SURE IF CORRECT
+			// return;
+		}
+
+		// get next token
+		listIndex++;
+
+		emit(code[cIndex].opcode, code[cIndex].l, code[cIndex].m); // THIS IS PROBABLY NOT CORRECT - DON'T UNDERSTAND
+	}
 }
 
 instruction *parse(lexeme *list, int printTable, int printCode)
