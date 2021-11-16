@@ -27,8 +27,9 @@ void block(lexeme *list);
 void constDeclare(lexeme *list);
 int varDeclare(lexeme *list);
 void procDeclare(lexeme *list);
-void statement();
-void mark();
+void statement(lexeme *list);
+void mark(); // THINK THIS TAKES IN THE SYMBOL TABLE, NOT SURE ATM
+void expression(lexeme *list);
 
 enum
 {
@@ -83,7 +84,7 @@ void block(lexeme *list) {
 	else
 		emit(6, level, numVars + 3);
 	
-	statement(); // NEED TO IMPLEMENT
+	statement(list); // NEED TO IMPLEMENT
 	mark(); // NEED TO IMPLEMENT
 
 	level--;
@@ -242,6 +243,109 @@ void procDeclare(lexeme *list) {
 		listIndex++;
 
 		emit(code[cIndex].opcode, code[cIndex].l, code[cIndex].m); // THIS IS PROBABLY NOT CORRECT - DON'T UNDERSTAND
+	}
+}
+
+void statement(lexeme *list) {
+	if(list[listIndex].type == identsym) {
+		int symidx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
+
+		if(symidx == -1) {
+			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3))
+				printparseerror(18); // PROBABLY WRONG
+			else 
+				printparseerror(18); // PROBABLY WRONG
+
+			// get next token
+			listIndex++;
+
+			expression(list); // NEED TO IMPLEMENT
+
+			emit(STO, level - table[symidx].level, table[symidx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
+			return;
+		}
+	}
+	if(list[listIndex].type == beginsym) {
+		do {
+			// get next token
+			listIndex++;
+			statement(list);
+		} while(list[listIndex].type == semicolonsym);
+
+		if(list[listIndex].type != endsym) {
+			if(list[listIndex].type == identsym || list[listIndex].type == beginsym || list[listIndex].type == ifsym
+			|| list[listIndex].type == whilesym || list[listIndex].type == callsym) { 
+				printparseerror(15); // NOT SURE IF CORRECT
+
+				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
+			} else {
+				printparseerror(15); // NOT SURE IF CORRECT
+
+				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
+			}
+		}
+		// get next token
+		listIndex++;
+		return;
+	}
+	if(list[listIndex].type == ifsym) {
+		// get next token
+		listIndex++;
+		
+		condition(list);
+
+		int jpcidx = cIndex; // NOT SURE HOW TO USE cIndex/WHEN TO INCREMENT, ETC.
+
+		emit(JPC, 0, 0); // PROBABLY WRONG
+		
+		if(list[listIndex].type != thensym) {
+			printparseerror(8); // DOUBLE CHECK
+			// EXIT OUT OF PROGRAM HERE
+		}
+
+		// get next token
+		listIndex++;
+
+		statement(list);
+
+		if(list[listIndex].type == elsesym) {
+			int jmpidx = cIndex; // WTF TO DO WITH cIndex?
+			emit(JMP, 0, 0); // HELP HERE
+			code[jpcidx].m = cIndex * 3;
+
+			statement(list);
+			
+			code[jmpidx].m = cIndex * 3;
+		} else {
+			code[jpcidx].m = cIndex * 3;
+		}
+
+		return;
+	}
+	if(list[listIndex].type == whilesym) {
+		// get next token
+		listIndex++;
+
+		int loopidx = cIndex;
+
+		condition(list);
+		if(list[listIndex].type != dosym) {
+			printparseerror(9); // DOUBLE CHECK
+			// EXIT FROM PROGRAM HERE
+		}
+		// get next token
+		listIndex++;
+		int jpcidx = cIndex;
+		emit(JPC, level, 0); // HELP HERE
+
+		statement(list);
+		emit(JMP, level, loopidx * 3); //  HELP HERE
+		code[jpcidx].m = cIndex * 3;
+		return;
+	}
+	if(list[listIndex].type == readsym) {
+		// get next token
+		listIndex++;
 	}
 }
 
