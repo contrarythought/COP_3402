@@ -30,6 +30,10 @@ void procDeclare(lexeme *list);
 void statement(lexeme *list);
 void mark(); // THINK THIS TAKES IN THE SYMBOL TABLE, NOT SURE ATM
 void expression(lexeme *list);
+void condition(lexeme *list);
+void expression(lexeme *list);
+void term(lexeme *list);
+void factor(lexeme *list);
 
 enum
 {
@@ -346,8 +350,100 @@ void statement(lexeme *list) {
 	if(list[listIndex].type == readsym) {
 		// get next token
 		listIndex++;
+
+		if(list[listIndex].type != identsym) {
+			printparseerror(6); // NOT SURE IF CORRECT
+			// EXIT PROGRAM
+		}
+		
+		int symidx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
+		if(symidx == -1) {
+			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
+				printparseerror(18); // DON'T KNOW WHAT TO PUT HERE
+				// EXIT PROGRAM
+			} else {
+				printparseerror(18); // PROBABLY WRONG
+				// EXIT PROGRAM
+			}
+			// get next token
+			listIndex++;
+			emit(READ, , ); // DON'T KNOW 
+			emit(STO, level - table[symidx].level, table[symidx].addr); // DON'T KNOW
+			return;
+		}
+	}
+	if(list[listIndex].type == writesym) {
+		// get next token
+		listIndex++;
+		expressio(list);
+		emit(WRITE, ,); // DON'T KNOW
+		return;
+	}
+	if(list[listIndex].type == callsym) {
+		// get next token
+		listIndex++;
+		int symidx = findSymbol(list[listIndex], 3); // NEED TO IMPLEMENT
+		if(symidx == -1) {
+			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 2)) {
+				printparseerror(18); // DON'T KNOW
+				// EXIT PROGRAM
+			} else {
+				printassemblycode(18); // DON'T KNOW
+				// EXIT PROGRAM
+			}
+			// get next token
+			listIndex++;
+			emit(CAL, level - table[symidx].level, symidx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
+		}
 	}
 }
+
+void condition(lexeme *list) {
+	if(list[listIndex].type == oddsym) {
+		// get next token
+		listIndex++;
+		expression(list);
+		emit(ODD, ,); // DON'T KNOW
+	} else {
+		expression(list);
+		if(list[listIndex].type == eqlsym) {
+			// get next token
+			listIndex++;			
+			expression(list);
+			emit(EQL,,); // DON'T KNOW
+		} else if(list[listIndex].type == neqsym) {
+			// get next token
+			listIndex++;
+			expression(list);
+			emit(NEQ,,); // DON'T KNOW
+		} else if(list[listIndex].type == lsssym) {
+			// get next token
+			listIndex++;
+			expression(list);
+			emit(LSS, ,); // DON'T KNOW
+		} else if(list[listIndex].type == leqsym) {
+			// get next token
+			listIndex++;
+			expression(list);
+			emit(LEQ,,); // DON'T KNOW
+		} else if(list[listIndex].type == gtrsym) {
+			// get next token
+			listIndex++;
+			expression(list);
+			emit(GTR,,); // DON'T KNOW
+		} else if(list[listIndex].type == geqsym) {
+			// get next token
+			listIndex++;
+			expression(list);
+			emit(GEQ, ,); // DON'T KNOW
+		} else {
+			printparseerror(10); // NOT SURE IF CORRECT
+			// EXIT PROGRAM
+		}
+	}
+}
+
+
 
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
