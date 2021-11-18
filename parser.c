@@ -29,13 +29,16 @@ void constDeclare(lexeme *list);
 int varDeclare(lexeme *list);
 void procDeclare(lexeme *list);
 void statement(lexeme *list);
-void mark(); // THINK THIS TAKES IN THE SYMBOL TABLE AS ARGUMENT, NOT SURE ATM
 void expression(lexeme *list);
 void condition(lexeme *list);
 void expression(lexeme *list);
 void term(lexeme *list);
 void factor(lexeme *list);
-int multipleDeclareCheck(lexeme token);
+
+/* helper function declarations */
+void mark(lexeme token); // TODO
+int multipleDeclareCheck(lexeme token); // IMPLEMENTED - CHECK TO SEE IF CORRECT
+
 
 enum
 {
@@ -44,6 +47,43 @@ enum
 };
 
 /* 
+	mark():
+
+	This function starts at the end of the table and works backward. 
+	It ignores marked entries. It looks at an entry’s level and if it is equal to the 
+	current level it marks that entry. It stops when it finds an unmarked entry whose 
+	level is less than the current level
+*/
+
+void mark(lexeme token) {
+	// tIndex keeps track of the current index that is available to be inserted at in the symbol table
+	// so I think I should start the linear search at tIndex - 1 to start at an index that has data in it
+	int index = tIndex - 1;
+
+	while(index >= 0) {
+
+		// only check entries that are UNMARKED
+		if(table[index].mark == UNMARKED) {
+
+			// if the current symbol i'm looking at's level is equal to the current level, MARK it
+			if(table[index].level == level) {
+				table[index].mark = MARKED;
+			} 
+
+			// if the current symbol's level is lower than the current level, exit
+			else if(table[index].level < level) {
+				break;
+			}
+		}
+
+		// decrement through the symbol table
+		index--;
+	}
+}
+
+/* 
+	multipleDeclareCheck():
+
 	This function should do a linear pass through the symbol table 
 	looking for the symbol name given. If it finds that name, it 
 	checks to see if it’s unmarked (no? keep searching). If it finds an 
@@ -52,18 +92,20 @@ enum
 	it gets to the end of the table, and if nothing is found, returns -1
 */
 int multipleDeclareCheck(lexeme token) {
-	while(tIndex >= 0) {
+	int index = tIndex - 1;
+
+	while(index >= 0) {
 		// check to see if the name of the token matches the symbol that tIndex is pointing to 
-		if(strcmp(table[tIndex].name, token.name) == 0) {
+		if(strcmp(table[index].name, token.name) == 0) {
 
 			// if the names match, check to see if it is unmarked
-			if(table[tIndex].mark == UNMARKED) {
+			if(table[index].mark == UNMARKED) {
 
 				// if unmarked, check the level and see if it equals the current level
-				if(table[tIndex].level == level) {
+				if(table[index].level == level) {
 
 					// return the index of the symbol table if the levels match
-					return tIndex;
+					return index;
 				}
 			}
 		}
@@ -80,7 +122,6 @@ int multipleDeclareCheck(lexeme token) {
 void program(lexeme *list) {
 	emit(7, 0, 0); // EMIT JMP - NOT SURE IF CORRECT
 	addToSymbolTable(3, "main", 0, 0, 0, UNMARKED);
-	tIndex++;
 
 	level = -1;
 
@@ -144,7 +185,7 @@ void constDeclare(lexeme *list) {
 			}
 				
 
-			symIdx = multipleDeclareCheck(list[listIndex]); /** TODO **/ 
+			symIdx = multipleDeclareCheck(list[listIndex]); 
 			if(symIdx == -1) {
 				printparseerror(19); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
@@ -173,7 +214,6 @@ void constDeclare(lexeme *list) {
 			
 			// add to symbol table
 			addToSymbolTable(1, saveName, list[listIndex].value, level, 0, UNMARKED); // PLEASE CHECK
-			tIndex++;
 
 			free(saveName); // free here, because don't think I have any use for saveName after inserting into symbol table
 
