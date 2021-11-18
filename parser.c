@@ -9,11 +9,12 @@
 instruction *code;
 int cIndex;
 symbol *table;
-int tIndex;
+int tIndex; // TODO - increment this every time something is added to the symbol table
 
 /* added these variable */
 int level;
 int listIndex;
+int symIdx; // I think this keeps track of the current table index
 
 void emit(int opname, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
@@ -34,6 +35,7 @@ void condition(lexeme *list);
 void expression(lexeme *list);
 void term(lexeme *list);
 void factor(lexeme *list);
+int multipleDeclareCheck(lexeme token);
 
 enum
 {
@@ -41,10 +43,45 @@ enum
 	MARKED
 };
 
+/* 
+	This function should do a linear pass through the symbol table 
+	looking for the symbol name given. If it finds that name, it 
+	checks to see if it’s unmarked (no? keep searching). If it finds an 
+	unmarked instance, it checks the level. If the level is equal to the 
+	current level, it returns that index. Otherwise it keeps searching until 
+	it gets to the end of the table, and if nothing is found, returns -1
+*/
+int multipleDeclareCheck(lexeme token) {
+	while(tIndex >= 0) {
+		// check to see if the name of the token matches the symbol that tIndex is pointing to 
+		if(strcmp(table[tIndex].name, token.name) == 0) {
+
+			// if the names match, check to see if it is unmarked
+			if(table[tIndex].mark == UNMARKED) {
+
+				// if unmarked, check the level and see if it equals the current level
+				if(table[tIndex].level == level) {
+
+					// return the index of the symbol table if the levels match
+					return tIndex;
+				}
+			}
+		}
+
+		// keep decrementing through the table, comparing each entry in the symbol table to the token input
+		tIndex--;
+	}
+
+	// if the program reaches here, nothing in the symbol table matched the input, and so return -1
+	return -1;
+}
+
 /* grammar function definitions */
 void program(lexeme *list) {
 	emit(7, 0, 0); // EMIT JMP - NOT SURE IF CORRECT
 	addToSymbolTable(3, "main", 0, 0, 0, UNMARKED);
+	tIndex++;
+
 	level = -1;
 
 	// execute block
@@ -88,7 +125,7 @@ void block(lexeme *list) {
 	else
 		emit(6, level, numVars + 3);
 	
-	statement(list); // NEED TO IMPLEMENT
+	statement(list); 
 	mark(); // NEED TO IMPLEMENT
 
 	level--;
@@ -103,17 +140,15 @@ void constDeclare(lexeme *list) {
 
 			if(list[listIndex].type != identsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
-				//return NULL;
+				// EXIT PROGRAM
 			}
 				
 
-			int symidx = multipleDeclareCheck(list[listIndex]); /** TODO **/ 
-			if(symidx == -1) {
+			symIdx = multipleDeclareCheck(list[listIndex]); /** TODO **/ 
+			if(symIdx == -1) {
 				printparseerror(19); // NOT SURE IF RIGHT
-				//return NULL;
+				// EXIT PROGRAM
 			}
-				
-			
 			// save ident name
 			int len = strlen(list[listIndex].name);
 			char *saveName = (char *) malloc(len + 1);
@@ -124,7 +159,7 @@ void constDeclare(lexeme *list) {
 
 			if(list[listIndex].type != assignsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
-				//return NULL;
+				// EXIT PROGRAM
 			}
 				
 			// get next token
@@ -132,12 +167,14 @@ void constDeclare(lexeme *list) {
 
 			if(list[listIndex].type != numbersym) {
 				printparseerror(2); // NOT SURE IF RIGHT
-				//return NULL;
+				// EXIT PROGRAM
 			}
 				
 			
 			// add to symbol table
 			addToSymbolTable(1, saveName, list[listIndex].value, level, 0, UNMARKED); // PLEASE CHECK
+			tIndex++;
+
 			free(saveName); // free here, because don't think I have any use for saveName after inserting into symbol table
 
 			// get next token
@@ -148,10 +185,10 @@ void constDeclare(lexeme *list) {
 	if(list[listIndex].type != semicolonsym) {
 		if(list[listIndex].type == identsym) {
 			printparseerror(2); // NOT SURE IF RIGHT
-			//return NULL;
+			// EXIT PROGRAM
 		} else {
 			printparseerror(2); // NOT SURE IF RIGHT
-			//return NULL;
+			// EXIT PROGRAM
 		}
 			
 	}
@@ -171,14 +208,15 @@ int varDeclare(lexeme *list) {
 
 			if(list[listIndex].type != identsym) {
 				printparseerror(3); // PLEASE CHECK
-				//return NULL;
+				// EXIT PROGRAM
 			}
 				
 
-			int symidx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
-			if(symidx != -1)
+			symIdx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
+			if(symIdx != -1) {
 				printparseerror(19); // NOT SURE IF CORRECT
-			
+				// EXIT PROGRAM
+			}
 			if(level == 0) {
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars - 1, UNMARKED);
 				//return NULL;
@@ -194,10 +232,10 @@ int varDeclare(lexeme *list) {
 		if(list[listIndex].type != semicolonsym) {
 			if(list[listIndex].type == identsym) {
 				printparseerror(3); // PLEASE CHECK
-				//return;
+				// EXIT PROGRAM
 			} else {
 				printparseerror(3); // PLEASE CHECK
-				//return;
+				// EXIT PROGRAM
 			}
 		}
 
@@ -215,12 +253,12 @@ void procDeclare(lexeme *list) {
 		
 		if(list[listIndex].type != identsym) {
 			printparseerror(4); // DOUBLE CHECK
-			//return;
+			// EXIT PROGRAM
 		}
-		int symidx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
-		if(symidx != -1) {
+		symIdx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
+		if(symIdx != -1) {
 			printparseerror(19); // NOT SURE IF CORRECT
-			//return;
+			// EXIT PROGRAM
 		}	
 			
 		addToSymbolTable(3, list[listIndex].name, 0, level, 0, UNMARKED);
@@ -230,7 +268,7 @@ void procDeclare(lexeme *list) {
 
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // DOUBLE CHECK
-			//return;
+			// EXIT PROGRAM
 		}
 
 		// get next token
@@ -240,7 +278,7 @@ void procDeclare(lexeme *list) {
 
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // NOT SURE IF CORRECT
-			// return;
+			// EXIT PROGRAM
 		}
 
 		// get next token
@@ -252,20 +290,22 @@ void procDeclare(lexeme *list) {
 
 void statement(lexeme *list) {
 	if(list[listIndex].type == identsym) {
-		int symidx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
+		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
 
-		if(symidx == -1) {
-			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3))
+		if(symIdx == -1) {
+			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
 				printparseerror(18); // PROBABLY WRONG
-			else 
+				// EXIT PROGRAM
+			} else {
 				printparseerror(18); // PROBABLY WRONG
-
+				// EXIT PROGRAM
+			} 
 			// get next token
 			listIndex++;
 
-			expression(list); // NEED TO IMPLEMENT
+			expression(list); 
 
-			emit(STO, level - table[symidx].level, table[symidx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
+			emit(STO, level - table[symIdx].level, table[symIdx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
 			return;
 		}
 	}
@@ -356,8 +396,8 @@ void statement(lexeme *list) {
 			// EXIT PROGRAM
 		}
 		
-		int symidx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
-		if(symidx == -1) {
+		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
+		if(symIdx == -1) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
 				printparseerror(18); // DON'T KNOW WHAT TO PUT HERE
 				// EXIT PROGRAM
@@ -368,7 +408,7 @@ void statement(lexeme *list) {
 			// get next token
 			listIndex++;
 			emit(READ, , ); // DON'T KNOW 
-			emit(STO, level - table[symidx].level, table[symidx].addr); // DON'T KNOW
+			emit(STO, level - table[symIdx].level, table[symIdx].addr); // DON'T KNOW
 			return;
 		}
 	}
@@ -382,8 +422,8 @@ void statement(lexeme *list) {
 	if(list[listIndex].type == callsym) {
 		// get next token
 		listIndex++;
-		int symidx = findSymbol(list[listIndex], 3); // NEED TO IMPLEMENT
-		if(symidx == -1) {
+		symIdx = findSymbol(list[listIndex], 3); // NEED TO IMPLEMENT
+		if(symIdx == -1) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 2)) {
 				printparseerror(18); // DON'T KNOW
 				// EXIT PROGRAM
@@ -393,7 +433,7 @@ void statement(lexeme *list) {
 			}
 			// get next token
 			listIndex++;
-			emit(CAL, level - table[symidx].level, symidx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
+			emit(CAL, level - table[symIdx].level, symIdx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
 		}
 	}
 }
