@@ -28,7 +28,7 @@ void constDeclare(lexeme *list);
 int varDeclare(lexeme *list);
 void procDeclare(lexeme *list);
 void statement(lexeme *list);
-void mark(); // THINK THIS TAKES IN THE SYMBOL TABLE, NOT SURE ATM
+void mark(); // THINK THIS TAKES IN THE SYMBOL TABLE AS ARGUMENT, NOT SURE ATM
 void expression(lexeme *list);
 void condition(lexeme *list);
 void expression(lexeme *list);
@@ -443,7 +443,116 @@ void condition(lexeme *list) {
 	}
 }
 
+void expression(lexeme *list) {
+	if(list[listIndex].type == subsym) {
+		// get next token
+		listIndex++;
+		term(list);
+		emit(NEG,,); // DON'T KNOW
 
+		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
+			if(list[listIndex].type == addsym) {
+				// get next token
+				listIndex++;
+				term(list);
+				emit(ADD, ,); // DON'T KNOW
+			} else {
+				// get next token
+				listIndex++;
+				term(list);
+				emit(SUB,,); // DON'T KNOW
+			}
+		}
+	} else {
+		if(list[listIndex].type == addsym) {
+			//get next token
+			listIndex++;
+		}
+		term(list);
+		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
+			if(list[listIndex].type == addsym) {
+				// get next term
+				listIndex++;
+				term(list);
+				emit(ADD, , ); // DON'T KNOW
+			} else {
+				// get next token
+				listIndex++;
+				term(list);
+				emit(SUB,,); // DON'T KNOW
+			}
+		}
+	}
+	if(list[listIndex].value % 3 == 0) { // DON'T THINK THIS IS CORRECT. PSEUDOCODE: "if token == (identifier number odd"
+		printparseerror(17); // DON'T KNOW WHAT ERROR - MAYBE 17??
+		// EXIT PROGRAM
+	}
+}
+
+void term(lexeme *list) {
+	factor(list);
+	while(list[listIndex].type == multsym || list[listIndex].type == divsym || list[listIndex].type == modsym) {
+		if(list[listIndex].type == multsym) {
+			// get next token
+			listIndex++;
+			factor(list);
+			emit(MUL,,); // DON'T KNOW
+		} else if(list[listIndex].type == divsym) {
+			// get next token
+			listIndex++;
+			factor(list);
+			emit(DIV,,); // DON'T KNOW
+		} else {
+			// get next token
+			listIndex++;
+			factor(list);
+			emit(MOD,,); // DON'T KNOW
+		}
+	}
+}
+
+void factor(lexeme *list) {
+	if(list[listIndex].type == identsym) {
+		int symidx_var = findSymbol(list[listIndex], 2); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT 
+		int symidx_const = findSymbol(list[listIndex], 1); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT
+
+		if(symidx_var == -1 && symidx_const == -1) {
+			if(findSymbol(list[listIndex], 3) != -1) {
+				printparseerror(18); // NOT SURE IF CORRECT
+				// EXIT PROGRAM
+			} else {
+				printparseerror(18); // NOT SURE IF CORRECT
+				// EXIT PROGRAM
+			}
+		}
+		if(symidx_var == -1) { // PSEUDOCODE SAYS: "if symIdx_var == -1 (const)" 
+			emit(LIT, , table[symidx_const].val); // DON'T KNOW	
+		} else if(symidx_const == -1 || table[symidx_var].level > table[symidx_const].level) {
+			emit(LOD, level - table[symidx_var].level, table[symidx_var].addr); // DON'T KNOW
+		} else {
+			emit(LIT, , table[symidx_const].val); // DON'T KNOW
+		}
+		// get next token
+		listIndex++;
+	} else if(list[listIndex].type == numbersym) {
+		emit(LIT,,); // DON'T KNOW
+		// get next token
+		listIndex++;
+	} else if(list[listIndex].type == lparensym) {
+		// get next token
+		listIndex++;
+		expression(list);
+		if(list[listIndex].type != rparensym) {
+			printparseerror(12); // DOUBLE CHECK
+			// EXIT PROGRAM
+		}
+		// get next token
+		listIndex++;
+	} else {
+		printparseerror(11); // NOT SURE
+		// EXIT PROGRAM
+	}
+}
 
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
@@ -457,6 +566,8 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 
 	listIndex = 0;
 	
+	/* START THE PARSING HERE - I THINK THIS IS ALL WE CALL TO START PARSING, BUT DOUBLE CHECK */
+	program(list);
 
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
 		when you test your code otherwise IT WILL SEGFAULT in 
