@@ -111,7 +111,7 @@ int multipleDeclareCheck(lexeme token) {
 		}
 
 		// keep decrementing through the table, comparing each entry in the symbol table to the token input
-		tIndex--;
+		index--;
 	}
 
 	// if the program reaches here, nothing in the symbol table matched the input, and so return -1
