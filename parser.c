@@ -167,7 +167,7 @@ void block(lexeme *list) {
 		emit(6, level, numVars + 3);
 	
 	statement(list); 
-	mark(); // NEED TO IMPLEMENT
+	mark(list[listIndex]); // NEED TO IMPLEMENT
 
 	level--;
 
