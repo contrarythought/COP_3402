@@ -38,13 +38,41 @@ void factor(lexeme *list);
 /* helper function declarations */
 void mark(lexeme token); // TODO
 int multipleDeclareCheck(lexeme token); // IMPLEMENTED - CHECK TO SEE IF CORRECT
-
+int findSymbol(lexeme token, int kind); // NEED TO IMPLEMENT
 
 enum
 {
 	UNMARKED, 
 	MARKED
 };
+
+/*
+	findSymbol: 
+
+	This function does a linear search for the given name. 
+	An entry only matches if it has the correct name AND kind value AND is unmarked. 
+	Then it tries to maximize the level value
+*/
+
+// TODO - DON'T THINK THIS IS CORRECT
+int findSymbol(lexeme token, int kind) {
+	// start the search backwards from the most recent addition in the symbol table
+	int index = tIndex - 1;
+
+	while(index >= 0) {
+
+		// See if the symbol's name and kind value match the token input, AND is unmarked
+		if(strcmp(table[index].name, token.name) == 0 && table[index].kind == kind && table[index].mark == UNMARKED) {
+
+			// Maximize the level
+			if(table[index].level > level) {
+				return index;
+			}
+		}	
+		index--;
+	}
+	return -1;
+}
 
 /* 
 	mark():
@@ -393,9 +421,12 @@ void statement(lexeme *list) {
 		statement(list);
 
 		if(list[listIndex].type == elsesym) {
-			int jmpidx = cIndex; // WTF TO DO WITH cIndex?
+			int jmpidx = cIndex; 
 			emit(JMP, 0, 0); // HELP HERE
 			code[jpcidx].m = cIndex * 3;
+
+			// get next token
+			listIndex++;
 
 			statement(list);
 			
@@ -563,7 +594,7 @@ void expression(lexeme *list) {
 			}
 		}
 	}
-	if(list[listIndex].value % 3 == 0) { // DON'T THINK THIS IS CORRECT. PSEUDOCODE: "if token == (identifier number odd"
+	if(list[listIndex].type == 28) { // DON'T THINK THIS IS CORRECT. PSEUDOCODE: "if token == (identifier number odd"
 		printparseerror(17); // DON'T KNOW WHAT ERROR - MAYBE 17??
 		// EXIT PROGRAM
 	}
