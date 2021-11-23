@@ -65,7 +65,7 @@ int findSymbol(lexeme token, int kind) {
 		if(strcmp(table[index].name, token.name) == 0 && table[index].kind == kind && table[index].mark == UNMARKED) {
 
 			// Maximize the level
-			if(table[index].level > level) {
+			if(table[index].level < level) {
 				return index;
 			}
 		}	
