@@ -171,7 +171,13 @@ void program(lexeme *list) {
 			code[line].m = table[code[line].m].addr
 	code[0].m = table[0].addr
 	*/
-
+	int i;
+	for(i = 0; i < cIndex; i++) {
+		if(code[i].opcode == 5) {
+			code[i].m = table[code[i].m].addr;
+		}
+	}
+	code[0].m = table[0].addr;
 }
 
 void block(lexeme *list) {
@@ -352,7 +358,7 @@ void procDeclare(lexeme *list) {
 		// get next token
 		listIndex++;
 
-		emit(code[cIndex].opcode, code[cIndex].l, code[cIndex].m); // THIS IS PROBABLY NOT CORRECT - DON'T UNDERSTAND
+		emit(2, 0, 0); // THIS IS PROBABLY NOT CORRECT - DON'T UNDERSTAND
 	}
 }
 
@@ -373,7 +379,7 @@ void statement(lexeme *list) {
 
 			expression(list); 
 
-			emit(STO, level - table[symIdx].level, table[symIdx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
+			emit(4, level - table[symIdx].level, table[symIdx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
 			return;
 		}
 	}
@@ -408,7 +414,7 @@ void statement(lexeme *list) {
 
 		int jpcidx = cIndex; // NOT SURE HOW TO USE cIndex/WHEN TO INCREMENT, ETC.
 
-		emit(JPC, 0, 0); // PROBABLY WRONG
+		emit(7, 0, 0); // PROBABLY WRONG
 		
 		if(list[listIndex].type != thensym) {
 			printparseerror(8); // DOUBLE CHECK
@@ -422,7 +428,7 @@ void statement(lexeme *list) {
 
 		if(list[listIndex].type == elsesym) {
 			int jmpidx = cIndex; 
-			emit(JMP, 0, 0); // HELP HERE
+			emit(7, 0, 0); // HELP HERE
 			code[jpcidx].m = cIndex * 3;
 
 			// get next token
@@ -451,10 +457,10 @@ void statement(lexeme *list) {
 		// get next token
 		listIndex++;
 		int jpcidx = cIndex;
-		emit(JPC, level, 0); // HELP HERE
+		emit(8, 0, 0); // HELP HERE
 
 		statement(list);
-		emit(JMP, level, loopidx * 3); //  HELP HERE
+		emit(7, 0, loopidx * 3); //  HELP HERE
 		code[jpcidx].m = cIndex * 3;
 		return;
 	}
@@ -478,16 +484,16 @@ void statement(lexeme *list) {
 			}
 			// get next token
 			listIndex++;
-			emit(READ, , ); // DON'T KNOW 
-			emit(STO, level - table[symIdx].level, table[symIdx].addr); // DON'T KNOW
+			emit(9, 0, 2); // DON'T KNOW 
+			emit(4, level - table[symIdx].level, table[symIdx].addr); // DON'T KNOW
 			return;
 		}
 	}
 	if(list[listIndex].type == writesym) {
 		// get next token
 		listIndex++;
-		expressio(list);
-		emit(WRITE, ,); // DON'T KNOW
+		expression(list);
+		emit(9, 0, 1); // DON'T KNOW
 		return;
 	}
 	if(list[listIndex].type == callsym) {
@@ -504,7 +510,7 @@ void statement(lexeme *list) {
 			}
 			// get next token
 			listIndex++;
-			emit(CAL, level - table[symIdx].level, symIdx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
+			emit(5, level - table[symIdx].level, symIdx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
 		}
 	}
 }
@@ -514,39 +520,39 @@ void condition(lexeme *list) {
 		// get next token
 		listIndex++;
 		expression(list);
-		emit(ODD, ,); // DON'T KNOW
+		emit(2, 0, 6); // DON'T KNOW
 	} else {
 		expression(list);
 		if(list[listIndex].type == eqlsym) {
 			// get next token
 			listIndex++;			
 			expression(list);
-			emit(EQL,,); // DON'T KNOW
+			emit(2, 0 , 8); // DON'T KNOW
 		} else if(list[listIndex].type == neqsym) {
 			// get next token
 			listIndex++;
 			expression(list);
-			emit(NEQ,,); // DON'T KNOW
+			emit(2, 0, 9); // DON'T KNOW
 		} else if(list[listIndex].type == lsssym) {
 			// get next token
 			listIndex++;
 			expression(list);
-			emit(LSS, ,); // DON'T KNOW
+			emit(2, 0, 10); // DON'T KNOW
 		} else if(list[listIndex].type == leqsym) {
 			// get next token
 			listIndex++;
 			expression(list);
-			emit(LEQ,,); // DON'T KNOW
+			emit(2, 0, 11); // DON'T KNOW
 		} else if(list[listIndex].type == gtrsym) {
 			// get next token
 			listIndex++;
 			expression(list);
-			emit(GTR,,); // DON'T KNOW
+			emit(2, 0 , 12); // DON'T KNOW
 		} else if(list[listIndex].type == geqsym) {
 			// get next token
 			listIndex++;
 			expression(list);
-			emit(GEQ, ,); // DON'T KNOW
+			emit(2, 0, 13); // DON'T KNOW
 		} else {
 			printparseerror(10); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
@@ -559,19 +565,19 @@ void expression(lexeme *list) {
 		// get next token
 		listIndex++;
 		term(list);
-		emit(NEG,,); // DON'T KNOW
+		emit(2, 0, 1); // DON'T KNOW
 
 		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
 			if(list[listIndex].type == addsym) {
 				// get next token
 				listIndex++;
 				term(list);
-				emit(ADD, ,); // DON'T KNOW
+				emit(2, 0, 2); // DON'T KNOW
 			} else {
 				// get next token
 				listIndex++;
 				term(list);
-				emit(SUB,,); // DON'T KNOW
+				emit(2, 0, 3); // DON'T KNOW
 			}
 		}
 	} else {
@@ -585,12 +591,12 @@ void expression(lexeme *list) {
 				// get next term
 				listIndex++;
 				term(list);
-				emit(ADD, , ); // DON'T KNOW
+				emit(2, 0, 2); // DON'T KNOW
 			} else {
 				// get next token
 				listIndex++;
 				term(list);
-				emit(SUB,,); // DON'T KNOW
+				emit(2, 0, 3); // DON'T KNOW
 			}
 		}
 	}
@@ -607,17 +613,17 @@ void term(lexeme *list) {
 			// get next token
 			listIndex++;
 			factor(list);
-			emit(MUL,,); // DON'T KNOW
+			emit(2, 0, 4); // DON'T KNOW
 		} else if(list[listIndex].type == divsym) {
 			// get next token
 			listIndex++;
 			factor(list);
-			emit(DIV,,); // DON'T KNOW
+			emit(2, 0, 5); // DON'T KNOW
 		} else {
 			// get next token
 			listIndex++;
 			factor(list);
-			emit(MOD,,); // DON'T KNOW
+			emit(2, 0, 7); // DON'T KNOW
 		}
 	}
 }
@@ -637,16 +643,16 @@ void factor(lexeme *list) {
 			}
 		}
 		if(symidx_var == -1) { // PSEUDOCODE SAYS: "if symIdx_var == -1 (const)" 
-			emit(LIT, , table[symidx_const].val); // DON'T KNOW	
+			emit(1, 0, table[symidx_const].val); // DON'T KNOW	
 		} else if(symidx_const == -1 || table[symidx_var].level > table[symidx_const].level) {
-			emit(LOD, level - table[symidx_var].level, table[symidx_var].addr); // DON'T KNOW
+			emit(3, level - table[symidx_var].level, table[symidx_var].addr); // DON'T KNOW
 		} else {
-			emit(LIT, , table[symidx_const].val); // DON'T KNOW
+			emit(1, 0, table[symidx_const].val); // DON'T KNOW
 		}
 		// get next token
 		listIndex++;
 	} else if(list[listIndex].type == numbersym) {
-		emit(LIT,,); // DON'T KNOW
+		emit(1, 0, 0); // DON'T KNOW
 		// get next token
 		listIndex++;
 	} else if(list[listIndex].type == lparensym) {
@@ -676,6 +682,8 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 
 	listIndex = 0;
+	cIndex = 0;
+	tIndex = 0;
 	
 	/* START THE PARSING HERE - I THINK THIS IS ALL WE CALL TO START PARSING, BUT DOUBLE CHECK */
 	program(list);
