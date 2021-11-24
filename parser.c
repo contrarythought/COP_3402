@@ -216,6 +216,7 @@ void constDeclare(lexeme *list) {
 			if(list[listIndex].type != identsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
+				exit(1);
 			}
 				
 
@@ -223,6 +224,7 @@ void constDeclare(lexeme *list) {
 			if(symIdx == -1) {
 				printparseerror(19); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
+				exit(1);
 			}
 			// save ident name
 			int len = strlen(list[listIndex].name);
@@ -235,6 +237,7 @@ void constDeclare(lexeme *list) {
 			if(list[listIndex].type != assignsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
+				exit(1);
 			}
 				
 			// get next token
@@ -243,6 +246,7 @@ void constDeclare(lexeme *list) {
 			if(list[listIndex].type != numbersym) {
 				printparseerror(2); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
+				exit(1);
 			}
 				
 			
@@ -260,9 +264,11 @@ void constDeclare(lexeme *list) {
 		if(list[listIndex].type == identsym) {
 			printparseerror(2); // NOT SURE IF RIGHT
 			// EXIT PROGRAM
+			exit(1);
 		} else {
 			printparseerror(2); // NOT SURE IF RIGHT
 			// EXIT PROGRAM
+			exit(1);
 		}
 			
 	}
@@ -283,6 +289,7 @@ int varDeclare(lexeme *list) {
 			if(list[listIndex].type != identsym) {
 				printparseerror(3); // PLEASE CHECK
 				// EXIT PROGRAM
+				exit(1);
 			}
 				
 
@@ -290,6 +297,7 @@ int varDeclare(lexeme *list) {
 			if(symIdx != -1) {
 				printparseerror(19); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
+				exit(1);
 			}
 			if(level == 0) {
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars - 1, UNMARKED);
@@ -307,9 +315,11 @@ int varDeclare(lexeme *list) {
 			if(list[listIndex].type == identsym) {
 				printparseerror(3); // PLEASE CHECK
 				// EXIT PROGRAM
+				exit(1);
 			} else {
 				printparseerror(3); // PLEASE CHECK
 				// EXIT PROGRAM
+				exit(1);
 			}
 		}
 
@@ -328,11 +338,13 @@ void procDeclare(lexeme *list) {
 		if(list[listIndex].type != identsym) {
 			printparseerror(4); // DOUBLE CHECK
 			// EXIT PROGRAM
+			exit(1);
 		}
 		symIdx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
 		if(symIdx != -1) {
 			printparseerror(19); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
+			exit(1);
 		}	
 			
 		addToSymbolTable(3, list[listIndex].name, 0, level, 0, UNMARKED);
@@ -343,6 +355,7 @@ void procDeclare(lexeme *list) {
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // DOUBLE CHECK
 			// EXIT PROGRAM
+			exit(1);
 		}
 
 		// get next token
@@ -353,6 +366,7 @@ void procDeclare(lexeme *list) {
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
+			exit(1);
 		}
 
 		// get next token
@@ -370,9 +384,11 @@ void statement(lexeme *list) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
+				exit(1);
 			} else {
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
+				exit(1);
 			} 
 			// get next token
 			listIndex++;
@@ -396,10 +412,12 @@ void statement(lexeme *list) {
 				printparseerror(15); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
+				exit(1);
 			} else {
 				printparseerror(15); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
+				exit(1);
 			}
 		}
 		// get next token
@@ -419,6 +437,7 @@ void statement(lexeme *list) {
 		if(list[listIndex].type != thensym) {
 			printparseerror(8); // DOUBLE CHECK
 			// EXIT OUT OF PROGRAM HERE
+			exit(1);
 		}
 
 		// get next token
@@ -453,6 +472,7 @@ void statement(lexeme *list) {
 		if(list[listIndex].type != dosym) {
 			printparseerror(9); // DOUBLE CHECK
 			// EXIT FROM PROGRAM HERE
+			exit(1);
 		}
 		// get next token
 		listIndex++;
@@ -471,6 +491,7 @@ void statement(lexeme *list) {
 		if(list[listIndex].type != identsym) {
 			printparseerror(6); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
+			exit(1);
 		}
 		
 		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
@@ -478,9 +499,11 @@ void statement(lexeme *list) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
 				printparseerror(18); // DON'T KNOW WHAT TO PUT HERE
 				// EXIT PROGRAM
+				exit(1);
 			} else {
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
+				exit(1);
 			}
 			// get next token
 			listIndex++;
@@ -504,9 +527,11 @@ void statement(lexeme *list) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 2)) {
 				printparseerror(18); // DON'T KNOW
 				// EXIT PROGRAM
+				exit(1);
 			} else {
 				printassemblycode(18); // DON'T KNOW
 				// EXIT PROGRAM
+				exit(1);
 			}
 			// get next token
 			listIndex++;
@@ -556,6 +581,7 @@ void condition(lexeme *list) {
 		} else {
 			printparseerror(10); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
+			exit(1);
 		}
 	}
 }
@@ -603,6 +629,7 @@ void expression(lexeme *list) {
 	if(list[listIndex].type == 28) { // DON'T THINK THIS IS CORRECT. PSEUDOCODE: "if token == (identifier number odd"
 		printparseerror(17); // DON'T KNOW WHAT ERROR - MAYBE 17??
 		// EXIT PROGRAM
+		exit(1);
 	}
 }
 
@@ -637,9 +664,11 @@ void factor(lexeme *list) {
 			if(findSymbol(list[listIndex], 3) != -1) {
 				printparseerror(18); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
+				exit(1);
 			} else {
 				printparseerror(18); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
+				exit(1);
 			}
 		}
 		if(symidx_var == -1) { // PSEUDOCODE SAYS: "if symIdx_var == -1 (const)" 
@@ -662,12 +691,14 @@ void factor(lexeme *list) {
 		if(list[listIndex].type != rparensym) {
 			printparseerror(12); // DOUBLE CHECK
 			// EXIT PROGRAM
+			exit(1);
 		}
 		// get next token
 		listIndex++;
 	} else {
 		printparseerror(11); // NOT SURE
 		// EXIT PROGRAM
+		exit(1);
 	}
 }
 
@@ -697,7 +728,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	// I believe this is the end of the function
 	code[cIndex].opcode = -1;
 	
-	//printf("finished\n");
+	printf("finished\n");
 	return code;
 }
 
