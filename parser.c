@@ -149,6 +149,7 @@ int multipleDeclareCheck(lexeme token) {
 
 /* grammar function definitions */
 void program(lexeme *list) {
+	printf("Here program(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	emit(7, 0, 0); // EMIT JMP - NOT SURE IF CORRECT
 	addToSymbolTable(3, "main", 0, 0, 0, UNMARKED);
 
@@ -184,6 +185,7 @@ void program(lexeme *list) {
 }
 
 void block(lexeme *list) {
+	printf("Here block(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	level++;
 	
 	// DON'T KNOW WHAT THIS IS
@@ -220,6 +222,7 @@ void block(lexeme *list) {
 }
 
 void constDeclare(lexeme *list) {
+	printf("Here constDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == constsym) {
 		do {
 			// get next token
@@ -296,6 +299,7 @@ void constDeclare(lexeme *list) {
 }
 
 int varDeclare(lexeme *list) {
+	printf("Here varDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	int numVars = 0;
 	if(list[listIndex].type == varsym) {
 		do {
@@ -351,6 +355,7 @@ int varDeclare(lexeme *list) {
 }
 
 void procDeclare(lexeme *list) {
+	printf("Here procDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	while(list[listIndex].type == procsym) {
 		// get next token
 		listIndex++;
@@ -403,6 +408,7 @@ void procDeclare(lexeme *list) {
 }
 
 void statement(lexeme *list) {
+	printf("Here statement(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == identsym) {
 		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
 
@@ -597,6 +603,7 @@ void statement(lexeme *list) {
 }
 
 void condition(lexeme *list) {
+	printf("Here condition(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == oddsym) {
 		// get next token
 		listIndex++;
@@ -668,6 +675,7 @@ void condition(lexeme *list) {
 }
 
 void expression(lexeme *list) {
+	printf("Here expression(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == subsym) {
 		// get next token
 		listIndex++;
@@ -734,6 +742,7 @@ void expression(lexeme *list) {
 }
 
 void term(lexeme *list) {
+	printf("Here term(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	factor(list);
 	while(list[listIndex].type == multsym || list[listIndex].type == divsym || list[listIndex].type == modsym) {
 		if(list[listIndex].type == multsym) {
@@ -765,6 +774,7 @@ void term(lexeme *list) {
 }
 
 void factor(lexeme *list) {
+	printf("Here factor(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == identsym) {
 		int symidx_var = findSymbol(list[listIndex], 2); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT 
 		int symidx_const = findSymbol(list[listIndex], 1); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT
