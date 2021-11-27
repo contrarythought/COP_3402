@@ -15,6 +15,7 @@ int tIndex; // TODO - increment this every time something is added to the symbol
 int level;
 int listIndex;
 int symIdx; // I think this keeps track of the current table index
+int err_flag;
 
 void emit(int opname, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
@@ -155,17 +156,19 @@ void program(lexeme *list) {
 
 	// execute block
 	block(list);
+	if(err_flag)
+		return;
 
 	if(list[listIndex].type != periodsym) {
 		printparseerror(1);
-		//return NULL;
+		err_flag = 1;
+		return;
 	}
 		
 
 	emit(9, 0, 3); // EMIT HALT - NOT SURE IF CORRECT
 
 	/* 
-	TODO
 	for each line in code
 		if line has OPR 5 (CALL)
 			code[line].m = table[code[line].m].addr
@@ -187,11 +190,17 @@ void block(lexeme *list) {
 	int procedure_idx = tIndex - 1;
 
 	constDeclare(list);
+	if(err_flag)
+		return;
 
 	// numVars = number of variables declared
 	int numVars = varDeclare(list);
+	if(err_flag)
+		return;
 
 	procDeclare(list);
+	if(err_flag)
+		return;
 
 	table[procedure_idx].addr = cIndex * 3; // DON'T UNDERSTAND THIS
 
@@ -200,7 +209,10 @@ void block(lexeme *list) {
 	else
 		emit(6, level, numVars + 3);
 	
-	statement(list); 
+	statement(list);
+	if(err_flag)
+		return;
+
 	mark(list[listIndex]); // NEED TO IMPLEMENT
 
 	level--;
@@ -216,7 +228,8 @@ void constDeclare(lexeme *list) {
 			if(list[listIndex].type != identsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 				
 
@@ -224,7 +237,8 @@ void constDeclare(lexeme *list) {
 			if(symIdx == -1) {
 				printparseerror(19); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 			// save ident name
 			int len = strlen(list[listIndex].name);
@@ -237,7 +251,8 @@ void constDeclare(lexeme *list) {
 			if(list[listIndex].type != assignsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 				
 			// get next token
@@ -246,7 +261,8 @@ void constDeclare(lexeme *list) {
 			if(list[listIndex].type != numbersym) {
 				printparseerror(2); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 				
 			
@@ -264,11 +280,13 @@ void constDeclare(lexeme *list) {
 		if(list[listIndex].type == identsym) {
 			printparseerror(2); // NOT SURE IF RIGHT
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		} else {
 			printparseerror(2); // NOT SURE IF RIGHT
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 			
 	}
@@ -289,7 +307,8 @@ int varDeclare(lexeme *list) {
 			if(list[listIndex].type != identsym) {
 				printparseerror(3); // PLEASE CHECK
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return -1;
 			}
 				
 
@@ -297,14 +316,13 @@ int varDeclare(lexeme *list) {
 			if(symIdx != -1) {
 				printparseerror(19); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return -1;
 			}
 			if(level == 0) {
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars - 1, UNMARKED);
-				//return NULL;
 			} else {
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars + 2, UNMARKED);
-				//return NULL;
 			}
 		
 			// get next token
@@ -315,11 +333,13 @@ int varDeclare(lexeme *list) {
 			if(list[listIndex].type == identsym) {
 				printparseerror(3); // PLEASE CHECK
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return -1;
 			} else {
 				printparseerror(3); // PLEASE CHECK
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return -1;
 			}
 		}
 
@@ -338,13 +358,15 @@ void procDeclare(lexeme *list) {
 		if(list[listIndex].type != identsym) {
 			printparseerror(4); // DOUBLE CHECK
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 		symIdx = multipleDeclareCheck(list[listIndex]); // NEED TO IMPLEMENT
 		if(symIdx != -1) {
 			printparseerror(19); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}	
 			
 		addToSymbolTable(3, list[listIndex].name, 0, level, 0, UNMARKED);
@@ -355,18 +377,22 @@ void procDeclare(lexeme *list) {
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // DOUBLE CHECK
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 
 		// get next token
 		listIndex++;
 
 		block(list);
+		if(err_flag)
+			return;
 
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 
 		// get next token
@@ -384,16 +410,20 @@ void statement(lexeme *list) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			} else {
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			} 
 			// get next token
 			listIndex++;
 
 			expression(list); 
+			if(err_flag)
+				return;
 
 			emit(4, level - table[symIdx].level, table[symIdx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
 			return;
@@ -404,6 +434,8 @@ void statement(lexeme *list) {
 			// get next token
 			listIndex++;
 			statement(list);
+			if(err_flag)
+				return;				
 		} while(list[listIndex].type == semicolonsym);
 
 		if(list[listIndex].type != endsym) {
@@ -412,12 +444,14 @@ void statement(lexeme *list) {
 				printparseerror(15); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
-				exit(1);
+				err_flag = 1;
+				return;
 			} else {
 				printparseerror(15); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 		}
 		// get next token
@@ -429,6 +463,8 @@ void statement(lexeme *list) {
 		listIndex++;
 		
 		condition(list);
+		if(err_flag)
+			return;
 
 		int jpcidx = cIndex; // NOT SURE HOW TO USE cIndex/WHEN TO INCREMENT, ETC.
 
@@ -437,13 +473,16 @@ void statement(lexeme *list) {
 		if(list[listIndex].type != thensym) {
 			printparseerror(8); // DOUBLE CHECK
 			// EXIT OUT OF PROGRAM HERE
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 
 		// get next token
 		listIndex++;
 
 		statement(list);
+		if(err_flag)
+			return;
 
 		if(list[listIndex].type == elsesym) {
 			int jmpidx = cIndex; 
@@ -454,7 +493,9 @@ void statement(lexeme *list) {
 			listIndex++;
 
 			statement(list);
-			
+			if(err_flag)
+				return;
+
 			code[jmpidx].m = cIndex * 3;
 		} else {
 			code[jpcidx].m = cIndex * 3;
@@ -469,10 +510,14 @@ void statement(lexeme *list) {
 		int loopidx = cIndex;
 
 		condition(list);
+		if(err_flag)
+			return;
+
 		if(list[listIndex].type != dosym) {
 			printparseerror(9); // DOUBLE CHECK
 			// EXIT FROM PROGRAM HERE
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 		// get next token
 		listIndex++;
@@ -480,6 +525,9 @@ void statement(lexeme *list) {
 		emit(8, 0, 0); // HELP HERE
 
 		statement(list);
+		if(err_flag)
+			return;
+
 		emit(7, 0, loopidx * 3); //  HELP HERE
 		code[jpcidx].m = cIndex * 3;
 		return;
@@ -491,7 +539,8 @@ void statement(lexeme *list) {
 		if(list[listIndex].type != identsym) {
 			printparseerror(6); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 		
 		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
@@ -499,11 +548,13 @@ void statement(lexeme *list) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
 				printparseerror(18); // DON'T KNOW WHAT TO PUT HERE
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			} else {
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 			// get next token
 			listIndex++;
@@ -516,6 +567,9 @@ void statement(lexeme *list) {
 		// get next token
 		listIndex++;
 		expression(list);
+		if(err_flag)
+			return;
+
 		emit(9, 0, 1); // DON'T KNOW
 		return;
 	}
@@ -527,11 +581,13 @@ void statement(lexeme *list) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 2)) {
 				printparseerror(18); // DON'T KNOW
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			} else {
 				printassemblycode(18); // DON'T KNOW
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 			// get next token
 			listIndex++;
@@ -545,43 +601,68 @@ void condition(lexeme *list) {
 		// get next token
 		listIndex++;
 		expression(list);
+		if(err_flag)
+			return;
+
 		emit(2, 0, 6); // DON'T KNOW
 	} else {
 		expression(list);
+		if(err_flag)
+			return;
+
 		if(list[listIndex].type == eqlsym) {
 			// get next token
 			listIndex++;			
 			expression(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0 , 8); // DON'T KNOW
 		} else if(list[listIndex].type == neqsym) {
 			// get next token
 			listIndex++;
 			expression(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 9); // DON'T KNOW
 		} else if(list[listIndex].type == lsssym) {
 			// get next token
 			listIndex++;
 			expression(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 10); // DON'T KNOW
 		} else if(list[listIndex].type == leqsym) {
 			// get next token
 			listIndex++;
 			expression(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 11); // DON'T KNOW
 		} else if(list[listIndex].type == gtrsym) {
 			// get next token
 			listIndex++;
 			expression(list);
+			if(err_flag)
+				return;
+				
 			emit(2, 0 , 12); // DON'T KNOW
 		} else if(list[listIndex].type == geqsym) {
 			// get next token
 			listIndex++;
 			expression(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 13); // DON'T KNOW
 		} else {
 			printparseerror(10); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 	}
 }
@@ -591,6 +672,9 @@ void expression(lexeme *list) {
 		// get next token
 		listIndex++;
 		term(list);
+		if(err_flag)
+			return;
+
 		emit(2, 0, 1); // DON'T KNOW
 
 		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
@@ -598,11 +682,17 @@ void expression(lexeme *list) {
 				// get next token
 				listIndex++;
 				term(list);
+				if(err_flag)
+					return;
+
 				emit(2, 0, 2); // DON'T KNOW
 			} else {
 				// get next token
 				listIndex++;
 				term(list);
+				if(err_flag)
+					return;
+
 				emit(2, 0, 3); // DON'T KNOW
 			}
 		}
@@ -612,16 +702,25 @@ void expression(lexeme *list) {
 			listIndex++;
 		}
 		term(list);
+		if(err_flag)
+			return;
+
 		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
 			if(list[listIndex].type == addsym) {
 				// get next term
 				listIndex++;
 				term(list);
+				if(err_flag)
+					return;
+
 				emit(2, 0, 2); // DON'T KNOW
 			} else {
 				// get next token
 				listIndex++;
 				term(list);
+				if(err_flag)
+					return;
+
 				emit(2, 0, 3); // DON'T KNOW
 			}
 		}
@@ -629,7 +728,8 @@ void expression(lexeme *list) {
 	if(list[listIndex].type == 28) { // DON'T THINK THIS IS CORRECT. PSEUDOCODE: "if token == (identifier number odd"
 		printparseerror(17); // DON'T KNOW WHAT ERROR - MAYBE 17??
 		// EXIT PROGRAM
-		exit(1);
+		err_flag = 1;
+		return;
 	}
 }
 
@@ -640,16 +740,25 @@ void term(lexeme *list) {
 			// get next token
 			listIndex++;
 			factor(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 4); // DON'T KNOW
 		} else if(list[listIndex].type == divsym) {
 			// get next token
 			listIndex++;
 			factor(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 5); // DON'T KNOW
 		} else {
 			// get next token
 			listIndex++;
 			factor(list);
+			if(err_flag)
+				return;
+
 			emit(2, 0, 7); // DON'T KNOW
 		}
 	}
@@ -664,11 +773,13 @@ void factor(lexeme *list) {
 			if(findSymbol(list[listIndex], 3) != -1) {
 				printparseerror(18); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			} else {
 				printparseerror(18); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
-				exit(1);
+				err_flag = 1;
+				return;
 			}
 		}
 		if(symidx_var == -1) { // PSEUDOCODE SAYS: "if symIdx_var == -1 (const)" 
@@ -688,17 +799,22 @@ void factor(lexeme *list) {
 		// get next token
 		listIndex++;
 		expression(list);
+		if(err_flag)
+			return;
+
 		if(list[listIndex].type != rparensym) {
 			printparseerror(12); // DOUBLE CHECK
 			// EXIT PROGRAM
-			exit(1);
+			err_flag = 1;
+			return;
 		}
 		// get next token
 		listIndex++;
 	} else {
 		printparseerror(11); // NOT SURE
 		// EXIT PROGRAM
-		exit(1);
+		err_flag = 1;
+		return;
 	}
 }
 
@@ -712,13 +828,15 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	// malloc MAX_SYMBOL_COUNT for table
 	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 
+	err_flag = 0;
 	listIndex = 0;
 	cIndex = 0;
 	tIndex = 0;
 	
 	/* START THE PARSING HERE - I THINK THIS IS ALL WE CALL TO START PARSING, BUT DOUBLE CHECK */
 	program(list);
-
+	if(err_flag)
+		return NULL;
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
 		when you test your code otherwise IT WILL SEGFAULT in 
 		vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
@@ -728,7 +846,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	// I believe this is the end of the function
 	code[cIndex].opcode = -1;
 	
-	printf("finished\n");
+	// printf("finished\n");
 	return code;
 }
 
