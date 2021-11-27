@@ -224,12 +224,14 @@ void block(lexeme *list) {
 void constDeclare(lexeme *list) {
 	printf("Here constDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == constsym) {
+		printf("Inside if\n");
 		do {
 			// get next token
 			listIndex++;
 
 			if(list[listIndex].type != identsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
+				//printf("HERE 234\n");
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
@@ -253,6 +255,7 @@ void constDeclare(lexeme *list) {
 
 			if(list[listIndex].type != assignsym) {
 				printparseerror(2); // NOT SURE IF RIGHT
+				//printf("HERE 257\n");
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
@@ -263,6 +266,7 @@ void constDeclare(lexeme *list) {
 
 			if(list[listIndex].type != numbersym) {
 				printparseerror(2); // NOT SURE IF RIGHT
+				//printf("HERE 267\n");
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
@@ -277,23 +281,19 @@ void constDeclare(lexeme *list) {
 			// get next token
 			listIndex++;
 		} while(list[listIndex].type == commasym);
-	}
 
-	if(list[listIndex].type != semicolonsym) {
-		if(list[listIndex].type == identsym) {
-			printparseerror(2); // NOT SURE IF RIGHT
-			// EXIT PROGRAM
-			err_flag = 1;
-			return;
-		} else {
-			printparseerror(2); // NOT SURE IF RIGHT
-			// EXIT PROGRAM
-			err_flag = 1;
-			return;
+		if(list[listIndex].type != semicolonsym) {
+			if(list[listIndex].type == identsym) {
+				printparseerror(2);
+				err_flag = 1;
+				return;
+			} else {
+				printparseerror(2);
+				err_flag = 1;
+				return;
+			}
 		}
-			
 	}
-
 	// get next token
 	listIndex++;
 }
