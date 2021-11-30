@@ -58,7 +58,7 @@ enum
 
 // TODO - DON'T THINK THIS IS CORRECT
 int findSymbol(lexeme token, int kind) {
-	printf("Here findSymbol(): Looking for %s, Kind: %d\n", token.name, kind);
+	//printf("Here findSymbol(): Looking for %s, Kind: %d\n", token.name, kind);
 	// start the search backwards from the most recent addition in the symbol table
 	int index = tIndex - 1;
 
@@ -151,7 +151,7 @@ int multipleDeclareCheck(lexeme token) {
 
 /* grammar function definitions */
 void program(lexeme *list) {
-	printf("Here program(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here program(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	emit(7, 0, 0); // EMIT JMP - NOT SURE IF CORRECT
 	addToSymbolTable(3, "main", 0, 0, 0, UNMARKED);
 
@@ -163,7 +163,7 @@ void program(lexeme *list) {
 		return;
 
 	//listIndex++;
-	printf("here\n");
+	//printf("here\n");
 	if(list[listIndex].type != periodsym) {
 		printparseerror(1);
 		err_flag = 1;
@@ -180,7 +180,7 @@ void program(lexeme *list) {
 	code[0].m = table[0].addr
 	*/
 
-	printf("here2\n");
+	//printf("here2\n");
 	int i;
 	for(i = 0; i < cIndex; i++) {
 		if(code[i].opcode == 5) {
@@ -188,11 +188,11 @@ void program(lexeme *list) {
 		}
 	}
 	code[0].m = table[0].addr;
-	printf("finished program()\n");
+	//printf("finished program()\n");
 }
 
 void block(lexeme *list) {
-	printf("Here block(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here block(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	level++;
 	
 	// DON'T KNOW WHAT THIS IS
@@ -229,9 +229,9 @@ void block(lexeme *list) {
 }
 
 void constDeclare(lexeme *list) {
-	printf("Here constDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here constDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == constsym) {
-		printf("Inside if\n");
+		//printf("Inside if\n");
 		do {
 			// get next token
 			listIndex++;
@@ -301,17 +301,17 @@ void constDeclare(lexeme *list) {
 			}
 		}
 	} else {
-		printf("Not a const\n");
+		//printf("Not a const\n");
 	}
 	// get next token
 	//listIndex++;
 }
 
 int varDeclare(lexeme *list) {
-	printf("Here varDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here varDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	int numVars = 0;
 	if(list[listIndex].type == varsym) {
-		printf("Inside var\n");
+		//printf("Inside var\n");
 		do {
 			numVars++;
 
@@ -334,10 +334,10 @@ int varDeclare(lexeme *list) {
 				return -1;
 			}
 			if(level == 0) {
-				printf("Adding %s to symbol table\n", list[listIndex].name);
+				//printf("Adding %s to symbol table\n", list[listIndex].name);
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars - 1, UNMARKED);
 			} else {
-				printf("Adding %s to symbol table\n", list[listIndex].name);
+				//printf("Adding %s to symbol table\n", list[listIndex].name);
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars + 2, UNMARKED);
 			}
 			//printsymboltable(); // DELETE
@@ -363,14 +363,14 @@ int varDeclare(lexeme *list) {
 		// get next token
 		listIndex++;
 	} else {
-		printf("not a var\n");
+		//printf("not a var\n");
 	}
 	
 	return numVars;
 }
 
 void procDeclare(lexeme *list) {
-	printf("Here procDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here procDeclare(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	while(list[listIndex].type == procsym) {
 		// get next token
 		listIndex++;
@@ -389,7 +389,7 @@ void procDeclare(lexeme *list) {
 			return;
 		}	
 		
-		printf("Adding procedure %s to symbol table\n", list[listIndex].name);
+		//printf("Adding procedure %s to symbol table\n", list[listIndex].name);
 		addToSymbolTable(3, list[listIndex].name, 0, level, 0, UNMARKED);
 		//printsymboltable(); // DELETE
 
@@ -410,7 +410,7 @@ void procDeclare(lexeme *list) {
 		if(err_flag)
 			return;
 
-		printf("Back in procDeclare()\n");
+		//printf("Back in procDeclare()\n");
 		if(list[listIndex].type != semicolonsym) {
 			printparseerror(4); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
@@ -426,22 +426,22 @@ void procDeclare(lexeme *list) {
 }
 
 void statement(lexeme *list) {
-	printf("Here statement(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here statement(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 
 	if(list[listIndex].type == identsym) {
-		printf("\tidentsym\n");
+		//printf("\tidentsym\n");
 		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
 		//printsymboltable();
 
 		if(symIdx == -1) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
-				printf("ERROR 417\n");
+				//printf("ERROR 417\n");
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
 			} else {
-				printf("ERROR 423\n");
+				//printf("ERROR 423\n");
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
 				err_flag = 1;
@@ -466,13 +466,13 @@ void statement(lexeme *list) {
 		return;
 	}
 	if(list[listIndex].type == beginsym) {
-		printf("\tbeginsym\n");
+		//printf("\tbeginsym\n");
 		do {
-			printf("in begin loop\n");
+			//printf("in begin loop\n");
 			// get next token
 			listIndex++;
 			statement(list);
-			printf("Returned back to begin in statement()\n");
+			//printf("Returned back to begin in statement()\n");
 			if(err_flag)
 				return;	
 			if(end_flag)
@@ -482,30 +482,27 @@ void statement(lexeme *list) {
 		if(list[listIndex].type != endsym) {
 			if(list[listIndex].type == identsym || list[listIndex].type == beginsym || list[listIndex].type == ifsym
 			|| list[listIndex].type == whilesym || list[listIndex].type == callsym) { 
-				printf("ERROR 452\n");
+				//printf("ERROR 452\n");
 				printparseerror(15); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
 				err_flag = 1;
 				return;
 			} else {
-				printf("ERROR 459\n");
+				//printf("ERROR 459\n");
 				printparseerror(15); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
 				err_flag = 1;
 				return;
 			}
-		} else {
-			//end_flag = 1;
-			//return;
-		}
+		} 
 		// get next token
 		listIndex++;
 		return;
 	}
 	if(list[listIndex].type == ifsym) {
-		printf("\tifsym\n");
+		//printf("\tifsym\n");
 		// get next token
 		listIndex++;
 		
@@ -518,8 +515,8 @@ void statement(lexeme *list) {
 		emit(7, 0, 0); // PROBABLY WRONG
 		
 		if(list[listIndex].type != thensym) {
-			printf("\tthensym\n");
-			printf("ERROR 484\n");
+			//printf("\tthensym\n");
+			//printf("ERROR 484\n");
 			printparseerror(8); // DOUBLE CHECK
 			// EXIT OUT OF PROGRAM HERE
 			err_flag = 1;
@@ -534,7 +531,7 @@ void statement(lexeme *list) {
 			return;
 
 		if(list[listIndex].type == elsesym) {
-			printf("\telsesym\n");
+			//printf("\telsesym\n");
 			int jmpidx = cIndex; 
 			emit(7, 0, 0); // HELP HERE
 			code[jpcidx].m = cIndex * 3;
@@ -554,7 +551,7 @@ void statement(lexeme *list) {
 		return;
 	}
 	if(list[listIndex].type == whilesym) {
-		printf("\twhilesym\n");
+		//printf("\twhilesym\n");
 		// get next token
 		listIndex++;
 
@@ -565,8 +562,8 @@ void statement(lexeme *list) {
 			return;
 
 		if(list[listIndex].type != dosym) {
-			printf("\tdosym\n");
-			printf("ERROR 528\n");
+			//printf("\tdosym\n");
+			//printf("ERROR 528\n");
 			printparseerror(9); // DOUBLE CHECK
 			// EXIT FROM PROGRAM HERE
 			err_flag = 1;
@@ -586,12 +583,12 @@ void statement(lexeme *list) {
 		return;
 	}
 	if(list[listIndex].type == readsym) {
-		printf("\treadsym\n");
+		//printf("\treadsym\n");
 		// get next token
 		listIndex++;
 
 		if(list[listIndex].type != identsym) {
-			printf("ERROR 552\n");
+			//printf("ERROR 552\n");
 			printparseerror(6); // NOT SURE IF CORRECT
 			// EXIT PROGRAM
 			err_flag = 1;
@@ -601,13 +598,13 @@ void statement(lexeme *list) {
 		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
 		if(symIdx == -1) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
-				printf("ERROR 562\n");
+				//printf("ERROR 562\n");
 				printparseerror(18); // DON'T KNOW WHAT TO PUT HERE
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
 			} else {
-				printf("ERROR 568\n");
+				//printf("ERROR 568\n");
 				printparseerror(18); // PROBABLY WRONG
 				// EXIT PROGRAM
 				err_flag = 1;
@@ -621,7 +618,7 @@ void statement(lexeme *list) {
 		}
 	}
 	if(list[listIndex].type == writesym) {
-		printf("\twritesym\n");
+		//printf("\twritesym\n");
 		// get next token
 		listIndex++;
 		expression(list);
@@ -632,19 +629,19 @@ void statement(lexeme *list) {
 		return;
 	}
 	if(list[listIndex].type == callsym) {
-		printf("\tcallsym\n");
+		//printf("\tcallsym\n");
 		// get next token
 		listIndex++;
 		symIdx = findSymbol(list[listIndex], 3); // NEED TO IMPLEMENT
 		if(symIdx == -1) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 2)) {
-				printf("ERROR 597\n");
+				//printf("ERROR 597\n");
 				printparseerror(18); // DON'T KNOW
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
 			} else {
-				printf("ERROR 603\n");
+				//printf("ERROR 603\n");
 				printparseerror(18); // DON'T KNOW
 				// EXIT PROGRAM
 				err_flag = 1;
@@ -655,11 +652,11 @@ void statement(lexeme *list) {
 			emit(5, level - table[symIdx].level, symIdx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
 		}
 	}
-	printf("end of statement with %d\n", list[listIndex].type);
+	//printf("end of statement with %d\n", list[listIndex].type);
 }
 
 void condition(lexeme *list) {
-	printf("Here condition(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("Here condition(): %d, %s\n", list[listIndex].type, list[listIndex].name);
 	if(list[listIndex].type == oddsym) {
 		// get next token
 		listIndex++;
@@ -731,7 +728,7 @@ void condition(lexeme *list) {
 }
 
 void expression(lexeme *list) {
-	printf("Here expression(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
+	//printf("Here expression(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
 	if(list[listIndex].type == subsym) {
 		// get next token
 		listIndex++;
@@ -768,7 +765,7 @@ void expression(lexeme *list) {
 		term(list);
 		if(err_flag)
 			return;
-		printf("Back in expression() with %d\n", list[listIndex].type);
+		//printf("Back in expression() with %d\n", list[listIndex].type);
 		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
 			if(list[listIndex].type == addsym) {
 				// get next term
@@ -798,9 +795,9 @@ void expression(lexeme *list) {
 }
 
 void term(lexeme *list) {
-	printf("Here term(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
+	//printf("Here term(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
 	factor(list);
-	printf("Back in term() with %d\n", list[listIndex].type);
+	//printf("Back in term() with %d\n", list[listIndex].type);
 	while(list[listIndex].type == multsym || list[listIndex].type == divsym || list[listIndex].type == modsym) {
 		if(list[listIndex].type == multsym) {
 			// get next token
@@ -831,7 +828,7 @@ void term(lexeme *list) {
 }
 
 void factor(lexeme *list) {
-	printf("Here factor(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
+	//printf("Here factor(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
 	if(list[listIndex].type == identsym) {
 		int symidx_var = findSymbol(list[listIndex], 2); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT 
 		int symidx_const = findSymbol(list[listIndex], 1); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT
@@ -859,7 +856,7 @@ void factor(lexeme *list) {
 		// get next token
 		listIndex++;
 	} else if(list[listIndex].type == numbersym) {
-		emit(1, 0, 0); // DON'T KNOW
+		emit(1, 0, list[listIndex].value); // DON'T KNOW
 		// get next token
 		listIndex++;
 	} else if(list[listIndex].type == lparensym) {
@@ -896,7 +893,6 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 
 	err_flag = 0;
-	end_flag = 0;
 	listIndex = 0;
 	cIndex = 0;
 	tIndex = 0;
@@ -913,8 +909,8 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 
 	// I believe this is the end of the function
 	code[cIndex].opcode = -1;
-	
-	printf("finished\n");
+	//printsymboltable();
+	//printf("finished\n");
 	return code;
 }
 
