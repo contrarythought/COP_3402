@@ -16,6 +16,7 @@ int level;
 int listIndex;
 int symIdx; // I think this keeps track of the current table index
 int err_flag;
+int end_flag;
 
 void emit(int opname, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
@@ -161,6 +162,8 @@ void program(lexeme *list) {
 	if(err_flag)
 		return;
 
+	//listIndex++;
+	printf("here\n");
 	if(list[listIndex].type != periodsym) {
 		printparseerror(1);
 		err_flag = 1;
@@ -176,6 +179,8 @@ void program(lexeme *list) {
 			code[line].m = table[code[line].m].addr
 	code[0].m = table[0].addr
 	*/
+
+	printf("here2\n");
 	int i;
 	for(i = 0; i < cIndex; i++) {
 		if(code[i].opcode == 5) {
@@ -183,6 +188,7 @@ void program(lexeme *list) {
 		}
 	}
 	code[0].m = table[0].addr;
+	printf("finished program()\n");
 }
 
 void block(lexeme *list) {
@@ -334,7 +340,7 @@ int varDeclare(lexeme *list) {
 				printf("Adding %s to symbol table\n", list[listIndex].name);
 				addToSymbolTable(2, list[listIndex].name, 0, level, numVars + 2, UNMARKED);
 			}
-			printsymboltable(); // DELETE
+			//printsymboltable(); // DELETE
 		
 			// get next token
 			listIndex++;
@@ -385,7 +391,7 @@ void procDeclare(lexeme *list) {
 		
 		printf("Adding procedure %s to symbol table\n", list[listIndex].name);
 		addToSymbolTable(3, list[listIndex].name, 0, level, 0, UNMARKED);
-		printsymboltable(); // DELETE
+		//printsymboltable(); // DELETE
 
 		// get next token
 		listIndex++;
@@ -421,10 +427,11 @@ void procDeclare(lexeme *list) {
 
 void statement(lexeme *list) {
 	printf("Here statement(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+
 	if(list[listIndex].type == identsym) {
 		printf("\tidentsym\n");
 		symIdx = findSymbol(list[listIndex], 2); // NEED TO IMPLEMENT
-		printsymboltable();
+		//printsymboltable();
 
 		if(symIdx == -1) {
 			if(findSymbol(list[listIndex], 1) != findSymbol(list[listIndex], 3)) {
@@ -440,25 +447,36 @@ void statement(lexeme *list) {
 				err_flag = 1;
 				return;
 			} 
-			// get next token
-			listIndex++;
-
-			expression(list); 
-			if(err_flag)
-				return;
-
-			emit(4, level - table[symIdx].level, table[symIdx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
+		}
+		// get next token
+		listIndex++;
+		if(list[listIndex].type != assignsym) {
+			printparseerror(5);
+			err_flag = 1;
 			return;
 		}
+		// get next token
+		listIndex++;
+
+		expression(list); 
+		if(err_flag)
+			return;
+
+		emit(4, level - table[symIdx].level, table[symIdx].addr); // NOT SURE WHERE TO ACCESS OPCODES...code array???
+		return;
 	}
 	if(list[listIndex].type == beginsym) {
 		printf("\tbeginsym\n");
 		do {
+			printf("in begin loop\n");
 			// get next token
 			listIndex++;
 			statement(list);
+			printf("Returned back to begin in statement()\n");
 			if(err_flag)
-				return;				
+				return;	
+			if(end_flag)
+				return;			
 		} while(list[listIndex].type == semicolonsym);
 
 		if(list[listIndex].type != endsym) {
@@ -478,6 +496,9 @@ void statement(lexeme *list) {
 				err_flag = 1;
 				return;
 			}
+		} else {
+			//end_flag = 1;
+			//return;
 		}
 		// get next token
 		listIndex++;
@@ -710,7 +731,7 @@ void condition(lexeme *list) {
 }
 
 void expression(lexeme *list) {
-	printf("Here expression(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	printf("Here expression(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
 	if(list[listIndex].type == subsym) {
 		// get next token
 		listIndex++;
@@ -747,7 +768,7 @@ void expression(lexeme *list) {
 		term(list);
 		if(err_flag)
 			return;
-
+		printf("Back in expression() with %d\n", list[listIndex].type);
 		while(list[listIndex].type == addsym || list[listIndex].type == subsym) {
 			if(list[listIndex].type == addsym) {
 				// get next term
@@ -777,8 +798,9 @@ void expression(lexeme *list) {
 }
 
 void term(lexeme *list) {
-	printf("Here term(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	printf("Here term(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
 	factor(list);
+	printf("Back in term() with %d\n", list[listIndex].type);
 	while(list[listIndex].type == multsym || list[listIndex].type == divsym || list[listIndex].type == modsym) {
 		if(list[listIndex].type == multsym) {
 			// get next token
@@ -809,7 +831,7 @@ void term(lexeme *list) {
 }
 
 void factor(lexeme *list) {
-	printf("Here factor(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	printf("Here factor(): %d, value: %d\n", list[listIndex].type, list[listIndex].value);
 	if(list[listIndex].type == identsym) {
 		int symidx_var = findSymbol(list[listIndex], 2); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT 
 		int symidx_const = findSymbol(list[listIndex], 1); // NOT SURE IF ARGUMENTS ARE CORRECT - NEED TO IMPLEMENT
@@ -874,6 +896,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	table = (symbol *) malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 
 	err_flag = 0;
+	end_flag = 0;
 	listIndex = 0;
 	cIndex = 0;
 	tIndex = 0;
@@ -891,7 +914,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	// I believe this is the end of the function
 	code[cIndex].opcode = -1;
 	
-	// printf("finished\n");
+	printf("finished\n");
 	return code;
 }
 
@@ -995,8 +1018,8 @@ void printsymboltable()
 	for (i = 0; i < tIndex; i++)
 		printf("%4d | %11s | %5d | %5d | %5d | %5d\n", table[i].kind, table[i].name, table[i].val, table[i].level, table[i].addr, table[i].mark); 
 	
-	//free(table);
-	//table = NULL;
+	free(table);
+	table = NULL;
 }
 
 void printassemblycode()
