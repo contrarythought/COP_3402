@@ -193,7 +193,9 @@ void program(lexeme *list) {
 
 void block(lexeme *list) {
 	//printf("Here block(): %d, %s\n", list[listIndex].type, list[listIndex].name);
+	//printf("level before incr: %d\n", level);
 	level++;
+
 	
 	// DON'T KNOW WHAT THIS IS
 	int procedure_idx = tIndex - 1;
@@ -213,18 +215,27 @@ void block(lexeme *list) {
 
 	table[procedure_idx].addr = cIndex * 3; // DON'T UNDERSTAND THIS
 
-	if(level == 0)
-		emit(6, level, numVars); // WHY DOES M = numVars?
-	else
-		emit(6, level, numVars + 3);
+	if(level == 0) {
+		//printf("\tin level == 0\n");
+		//printf("\tabout to emit INC. Level: %d\n", level);
+		emit(6, 0, numVars); // WHY DOES M = numVars?
+	}
+	else{
+		//printf("\tin level != 0\n");
+		//printf("\tabout to emit INC. Level: %d\n", level);
+		emit(6, 0, numVars + 3);
+	}
+		
 	
 	statement(list);
 	if(err_flag)
 		return;
 
 	mark(list[listIndex]); // NEED TO IMPLEMENT
-
+	
+	//printf("level after incr: %d\n", level);
 	level--;
+	//printf("level after decr: %d\n", level);
 
 }
 
@@ -490,7 +501,7 @@ void statement(lexeme *list) {
 				return;
 			} else {
 				//printf("ERROR 459\n");
-				printparseerror(15); // NOT SURE IF CORRECT
+				printparseerror(16); // NOT SURE IF CORRECT
 
 				// FIND A WAY TO BREAK OUT OF THE PROGRAM HERE
 				err_flag = 1;
@@ -835,12 +846,14 @@ void factor(lexeme *list) {
 
 		if(symidx_var == -1 && symidx_const == -1) {
 			if(findSymbol(list[listIndex], 3) != -1) {
-				printparseerror(18); // NOT SURE IF CORRECT
+				//printf("ERROR 849\n");
+				printparseerror(11); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
 			} else {
-				printparseerror(18); // NOT SURE IF CORRECT
+				//printf("ERROR 855\n");
+				printparseerror(19); // NOT SURE IF CORRECT
 				// EXIT PROGRAM
 				err_flag = 1;
 				return;
@@ -911,6 +924,11 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	code[cIndex].opcode = -1;
 	//printsymboltable();
 	//printf("finished\n");
+
+	if(printTable)
+		printsymboltable();
+	if(printCode) 
+		printassemblycode();
 	return code;
 }
 
