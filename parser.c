@@ -244,6 +244,7 @@ void constDeclare(lexeme *list) {
 	if(list[listIndex].type == constsym) {
 		//printf("Inside if\n");
 		do {
+			//printf("looping inside constDeclare()\n");
 			// get next token
 			listIndex++;
 
@@ -257,7 +258,7 @@ void constDeclare(lexeme *list) {
 				
 
 			symIdx = multipleDeclareCheck(list[listIndex]); 
-			if(symIdx == -1) {
+			if(symIdx != -1) {
 				printparseerror(19); // NOT SURE IF RIGHT
 				// EXIT PROGRAM
 				err_flag = 1;
@@ -310,6 +311,8 @@ void constDeclare(lexeme *list) {
 				err_flag = 1;
 				return;
 			}
+		} else {
+			listIndex++;
 		}
 	} else {
 		//printf("Not a const\n");
@@ -479,11 +482,11 @@ void statement(lexeme *list) {
 	if(list[listIndex].type == beginsym) {
 		//printf("\tbeginsym\n");
 		do {
-			//printf("in begin loop\n");
+			//printf("in begin loop with %d %s\n", list[listIndex].type, list[listIndex].name);
 			// get next token
 			listIndex++;
 			statement(list);
-			//printf("Returned back to begin in statement()\n");
+			//printf("Returned back to begin in statement() with %d %s\n", list[listIndex].type, list[listIndex].name);
 			if(err_flag)
 				return;	
 			if(end_flag)
@@ -621,12 +624,11 @@ void statement(lexeme *list) {
 				err_flag = 1;
 				return;
 			}
-			// get next token
-			listIndex++;
-			emit(9, 0, 2); // DON'T KNOW 
-			emit(4, level - table[symIdx].level, table[symIdx].addr); // DON'T KNOW
-			return;
 		}
+		listIndex++;
+		emit(9, 0, 2); // DON'T KNOW 
+		emit(4, level - table[symIdx].level, table[symIdx].addr); // DON'T KNOW
+		return;
 	}
 	if(list[listIndex].type == writesym) {
 		//printf("\twritesym\n");
@@ -658,12 +660,11 @@ void statement(lexeme *list) {
 				err_flag = 1;
 				return;
 			}
-			// get next token
-			listIndex++;
-			emit(5, level - table[symIdx].level, symIdx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
 		}
+		listIndex++;
+		emit(5, level - table[symIdx].level, symIdx); // DON'T KNOW, IS symidx SUPPOSED TO BE THE M VALUE??
 	}
-	//printf("end of statement with %d\n", list[listIndex].type);
+	//printf("end of statement with %d %s\n", list[listIndex].type, list[listIndex].name);
 }
 
 void condition(lexeme *list) {
