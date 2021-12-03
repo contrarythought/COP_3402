@@ -170,7 +170,6 @@ void program(lexeme *list) {
 		return;
 	}
 		
-
 	emit(9, 0, 3); // EMIT HALT - NOT SURE IF CORRECT
 
 	/* 
